@@ -133,3 +133,65 @@ document.addEventListener('keydown', e => {
     });
   }
 });
+
+// ── Period Selector ───────────────────────────────────────
+function setPeriod(btn, period) {
+  const selector = btn.closest('.period-selector');
+  selector.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // In production: reload chart data via fetch/AJAX
+  const labels = { '7h':'7 Hari','30h':'30 Hari','3b':'3 Bulan','1t':'1 Tahun' };
+  showToast('Periode diubah ke: ' + labels[period]);
+}
+
+// ── Export Report ─────────────────────────────────────────
+function exportReport(type) {
+  const overlay  = document.getElementById('export-overlay');
+  const title    = document.getElementById('export-overlay-title');
+  const msg      = document.getElementById('export-overlay-msg');
+
+  const config = {
+    pdf:   { title: 'Membuat PDF...', msg: 'Menyusun data laporan ke format PDF',       ext: 'pdf',  mime: 'application/pdf' },
+    excel: { title: 'Membuat Excel...', msg: 'Menyusun data laporan ke format Excel',   ext: 'xlsx', mime: 'application/vnd.ms-excel' },
+    csv:   { title: 'Membuat CSV...',   msg: 'Mengekspor data ke format CSV',           ext: 'csv',  mime: 'text/csv' },
+  };
+
+  const c = config[type];
+  title.textContent = c.title;
+  msg.textContent   = c.msg;
+  overlay.classList.add('show');
+
+  // Simulate async export (replace with real endpoint in production)
+  setTimeout(() => {
+    overlay.classList.remove('show');
+
+    if (type === 'csv') {
+      // Generate dummy CSV and trigger download
+      const csv = [
+        'ID,Pembeli,Produk,Harga,Tanggal,Metode,Status',
+        'TRX-001,Rina Susanti,Sido Mukti,120000,13 Apr 2026,Transfer Bank,Lunas',
+        'TRX-002,Budi Hartono,Kawung,110000,13 Apr 2026,QRIS,Menunggu',
+        'TRX-003,Dewi Lestari,Mega Mendung,135000,12 Apr 2026,GoPay,Lunas',
+      ].join('\n');
+      downloadBlob(csv, 'laporan-batikai.csv', 'text/csv;charset=utf-8;');
+    } else {
+      // For PDF/Excel: in production, call server endpoint like /admin/laporan/export?type=pdf
+      // window.location.href = `/admin/laporan/export?type=${type}`;
+      showToast(`✓ Laporan ${type.toUpperCase()} siap diunduh`);
+    }
+  }, 2200);
+}
+
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✓ File CSV berhasil diunduh');
+}
+

@@ -848,3 +848,294 @@
 @media (max-width: 480px) {
   .admin-stats-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   BatikAI — Laporan & Export additions
+   ============================================================ */
+
+/* ── Export Button Group ─────────────────────────────────── */
+.export-btn-group {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  font-family: var(--font-body);
+  font-size: .8rem;
+  font-weight: 600;
+  padding: .55rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  text-decoration: none;
+  letter-spacing: .01em;
+}
+
+.btn-export--pdf {
+  background: #C0392B;
+  color: #fff;
+  border-color: #C0392B;
+}
+.btn-export--pdf:hover {
+  background: #A93226;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(192,57,43,.3);
+}
+
+.btn-export--excel {
+  background: #1A7A43;
+  color: #fff;
+  border-color: #1A7A43;
+}
+.btn-export--excel:hover {
+  background: #155E35;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(26,122,67,.3);
+}
+
+.btn-export--csv {
+  background: transparent;
+  color: var(--clr-brown);
+  border-color: rgba(200,169,110,.5);
+}
+.btn-export--csv:hover {
+  background: var(--clr-cream-dark);
+  border-color: var(--clr-gold);
+}
+
+.btn-export__icon { font-size: .95rem; line-height: 1; }
+
+/* ── Period Selector ─────────────────────────────────────── */
+.period-selector {
+  display: flex;
+  gap: 0;
+  border: 1.5px solid rgba(200,169,110,.3);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.period-btn {
+  padding: .45rem .9rem;
+  font-size: .78rem;
+  font-weight: 500;
+  color: var(--clr-text-muted);
+  background: var(--clr-white);
+  border: none;
+  cursor: pointer;
+  border-right: 1px solid rgba(200,169,110,.2);
+  transition: all var(--dur);
+}
+.period-btn:last-child { border-right: none; }
+.period-btn.active {
+  background: var(--clr-brown-dark);
+  color: var(--clr-cream-light);
+  font-weight: 600;
+}
+.period-btn:hover:not(.active) { background: var(--clr-cream-dark); color: var(--clr-brown-dark); }
+
+/* ── Laporan Summary Row ─────────────────────────────────── */
+.laporan-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 1.6rem;
+}
+
+/* ── Chart Container ─────────────────────────────────────── */
+.chart-container {
+  position: relative;
+  height: 240px;
+}
+
+/* Multi-series bar */
+.chart-wrap--multi {
+  display: flex;
+  align-items: flex-end;
+  gap: .5rem;
+  height: 200px;
+  padding-bottom: 28px;
+  position: relative;
+}
+
+.chart-group {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  position: relative;
+  height: 100%;
+}
+
+.chart-group__label {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: .65rem;
+  color: var(--clr-text-muted);
+  white-space: nowrap;
+}
+
+.chart-bar--revenue {
+  background: linear-gradient(to top, var(--clr-green), var(--clr-green-mid));
+  border-radius: 4px 4px 0 0;
+  flex: 1;
+  position: relative;
+  transition: opacity .2s;
+  align-self: flex-end;
+}
+.chart-bar--revenue:hover { opacity: .8; }
+
+.chart-bar--orders {
+  background: linear-gradient(to top, var(--clr-brown), var(--clr-gold));
+  border-radius: 4px 4px 0 0;
+  flex: 1;
+  position: relative;
+  transition: opacity .2s;
+  align-self: flex-end;
+}
+.chart-bar--orders:hover { opacity: .8; }
+
+/* donut placeholder */
+.donut-chart {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--clr-green)    0%   38%,
+    var(--clr-gold)     38%  65%,
+    var(--clr-brown)    65%  82%,
+    var(--clr-green-mid) 82% 93%,
+    var(--clr-cream-dark) 93% 100%
+  );
+  position: relative;
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+.donut-chart::after {
+  content: '';
+  position: absolute;
+  inset: 36px;
+  background: var(--clr-white);
+  border-radius: 50%;
+}
+
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.donut-center__num {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--clr-brown-dark);
+  line-height: 1;
+}
+.donut-center__lbl {
+  font-size: .6rem;
+  color: var(--clr-text-muted);
+  letter-spacing: .05em;
+}
+
+/* donut legend */
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+  flex: 1;
+}
+.donut-legend-item {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  font-size: .8rem;
+  color: var(--clr-text-muted);
+}
+.donut-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.donut-legend-pct {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--clr-brown-dark);
+}
+
+/* ── Chart Legend Strip ──────────────────────────────────── */
+.chart-legend {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: .75rem;
+  flex-wrap: wrap;
+}
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .75rem;
+  color: var(--clr-text-muted);
+}
+.chart-legend-color {
+  width: 12px; height: 4px;
+  border-radius: 2px;
+}
+
+/* ── Export progress overlay ─────────────────────────────── */
+.export-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,20,10,.5);
+  z-index: 9000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.export-overlay.show { display: flex; }
+
+.export-spinner-box {
+  background: var(--clr-white);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 3rem;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,.2);
+}
+.export-spinner {
+  width: 48px; height: 48px;
+  border: 4px solid var(--clr-cream-dark);
+  border-top-color: var(--clr-green);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto 1rem;
+}
+.export-spinner-box p {
+  font-size: .9rem;
+  color: var(--clr-text-muted);
+}
+.export-spinner-box strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--clr-brown-dark);
+  margin-bottom: .3rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Responsive laporan ──────────────────────────────────── */
+@media (max-width: 1200px) {
+  .laporan-summary-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 640px) {
+  .laporan-summary-grid { grid-template-columns: 1fr; }
+  .export-btn-group { flex-direction: column; }
+}

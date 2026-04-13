@@ -279,25 +279,5 @@
     {{-- ═══════════════════════════════════════════════════ --}}
     {{-- CTA BANNER                                          --}}
     {{-- ═══════════════════════════════════════════════════ --}}
-    <section class="cta" aria-label="Call to action">
-        <div class="container cta__inner">
-            <h2 class="section-title">
-                Mulai Eksplorasi<br>
-                <span class="italic">Warisan Nusantara</span>
-            </h2>
-            <p class="cta__desc">
-                Bergabung dengan ribuan desainer, pengusaha, dan pencinta batik yang
-                telah menggunakan Batika untuk karya terbaik mereka.
-            </p>
-            <div class="cta__actions">
-                <a href="#" class="btn btn-cta-primary">
-                    Mulai Gratis
-                </a>
-                <a href="#koleksi" class="btn btn btn-cta-ghost">
-                    Lihat Koleksi
-                </a>
-            </div>
-        </div>
-    </section>
-
+    
 @endsection

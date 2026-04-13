@@ -82,13 +82,13 @@
             <div class="mission__visual" aria-hidden="true">
                 <div class="mission__img-stack">
                     <img class="mission__img mission__img--1"
-                         src="https://picsum.photos/seed/batikcraft1/600/500"
+                         src="{{ asset('images/images.jpg') }}"
                          alt="Pengrajin batik">
                     <img class="mission__img mission__img--2"
-                         src="https://picsum.photos/seed/batikcraft2/480/380"
+                         src="{{ asset('images/B-014.jpg') }}"
                          alt="Motif batik detail">
                     <div class="mission__img-badge">
-                        <p class="mission__img-badge-num">2022</p>
+                        <p class="mission__img-badge-num">2026</p>
                         <p class="mission__img-badge-lbl">Berdiri sejak</p>
                     </div>
                 </div>
@@ -274,24 +274,5 @@
         </div>
     </section>
 
-    {{-- ════════════════════════════════════════════════════ --}}
-    {{-- CTA                                                  --}}
-    {{-- ════════════════════════════════════════════════════ --}}
-    <section class="cta" aria-label="Call to action">
-        <div class="container cta__inner">
-            <h2 class="section-title">
-                Bergabung dalam<br>
-                <span class="italic">Perjalanan Ini</span>
-            </h2>
-            <p class="cta__desc">
-                Bersama-sama kita jaga warisan batik Nusantara tetap hidup,
-                relevan, dan bisa dinikmati oleh semua orang di seluruh dunia.
-            </p>
-            <div class="cta__actions">
-                <a href="/daftar" class="btn btn-cta-primary">Mulai Gratis</a>
-                <a href="/koleksi" class="btn btn-cta-ghost">Lihat Koleksi</a>
-            </div>
-        </div>
-    </section>
-
+    
 @endsection

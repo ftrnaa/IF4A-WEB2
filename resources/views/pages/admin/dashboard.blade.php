@@ -4,9 +4,28 @@
 
 @section('content')
 
-<div class="admin-page-header">
-    <h1>Selamat datang, Admin 👋</h1>
-    <p>Ringkasan performa BatikAI hari ini — {{ now()->translatedFormat('l, d F Y') }}</p>
+<div class="admin-page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+    <div>
+        <h1>Selamat datang, Admin 👋</h1>
+        <p>Ringkasan performa BatikAI hari ini — {{ now()->translatedFormat('l, d F Y') }}</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div class="period-selector">
+            <button class="period-btn" onclick="setPeriod(this,'7h')">7 Hari</button>
+            <button class="period-btn active" onclick="setPeriod(this,'30h')">30 Hari</button>
+            <button class="period-btn" onclick="setPeriod(this,'3b')">3 Bulan</button>
+            <button class="period-btn" onclick="setPeriod(this,'1t')">1 Tahun</button>
+        </div>
+        <div class="export-btn-group">
+            <button class="btn-export btn-export--pdf" onclick="exportReport('pdf')">
+                <span class="btn-export__icon">📄</span> Export PDF
+            </button>
+            <button class="btn-export btn-export--excel" onclick="exportReport('excel')">
+                <span class="btn-export__icon">📊</span> Export Excel
+            </button>
+            
+        </div>
+    </div>
 </div>
 
 {{-- ── Stat Cards ── --}}
@@ -184,4 +203,14 @@
 
 {{-- ── Send Certificate Modal ── --}}
 @include('pages.admin.partials.modal-send-cert')
+
+{{-- ── Export Loading Overlay ── --}}
+<div class="export-overlay" id="export-overlay">
+    <div class="export-spinner-box">
+        <div class="export-spinner"></div>
+        <strong id="export-overlay-title">Menyiapkan file...</strong>
+        <p id="export-overlay-msg">Harap tunggu, laporan sedang diproses</p>
+    </div>
+</div>
+
 @endsection
