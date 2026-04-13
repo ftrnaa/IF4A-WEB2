@@ -1,0 +1,78 @@
+/* ============================================================
+   BatikAI — Mobile menu & scroll-animation additions
+   Diimpor setelah app.css
+   ============================================================ */
+
+/* ── Mobile Menu ─────────────────────────────────────────── */
+.navbar__mobile {
+  display: none;
+  flex-direction: column;
+  background: var(--clr-cream-light);
+  border-top: 1px solid rgba(200,169,110,.2);
+  padding: 1rem var(--space-md);
+}
+
+.navbar__mobile.is-open {
+  display: flex;
+}
+
+.navbar__mobile ul {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.navbar__mobile ul a {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--clr-text-muted);
+  padding: .5rem 0;
+  border-bottom: 1px solid rgba(200,169,110,.15);
+  display: block;
+  transition: color var(--dur);
+}
+
+.navbar__mobile ul a:hover { color: var(--clr-brown-dark); }
+
+/* ── Navbar scrolled state ───────────────────────────────── */
+.navbar.scrolled {
+  padding-block: .6rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Scroll-triggered animations ────────────────────────── */
+.product-card,
+.how__step,
+.about__feature {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+
+.product-card.in-view,
+.how__step.in-view,
+.about__feature.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* stagger via nth-child */
+.collection__grid .product-card:nth-child(2) { transition-delay: .1s; }
+.collection__grid .product-card:nth-child(3) { transition-delay: .2s; }
+.collection__grid .product-card:nth-child(4) { transition-delay: .3s; }
+.collection__grid .product-card:nth-child(5) { transition-delay: .4s; }
+.collection__grid .product-card:nth-child(6) { transition-delay: .5s; }
+
+.how__steps .how__step:nth-child(2) { transition-delay: .15s; }
+.how__steps .how__step:nth-child(3) { transition-delay: .3s; }
+
+.about__features .about__feature:nth-child(2) { transition-delay: .1s; }
+.about__features .about__feature:nth-child(3) { transition-delay: .2s; }
+
+/* ── Active nav link ─────────────────────────────────────── */
+.navbar__nav a.active {
+  color: var(--clr-brown-dark);
+}
+.navbar__nav a.active::after {
+  width: 100%;
+}
