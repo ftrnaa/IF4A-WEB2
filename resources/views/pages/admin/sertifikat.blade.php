@@ -121,7 +121,17 @@
                                 📤 Kirim
                             </button>
                             @if($c['cert_sent'] || $c['license_sent'])
-                            <button class="admin-action-btn admin-action-btn--outline">📋 Riwayat</button>
+                            <button class="admin-action-btn admin-action-btn--outline"
+                            onclick="openRiwayatModal({
+                                name: '{{ $c['name'] }}',
+                                email: '{{ $c['email'] }}',
+                                product: '{{ $c['product'] }}',
+                                date: '{{ $c['date'] }}',
+                                cert_sent: {{ $c['cert_sent'] ? 'true' : 'false' }},
+                                license_sent: {{ $c['license_sent'] ? 'true' : 'false' }},
+                                img: '{{ $c['img'] }}',
+                                motif: '{{ $c['motif'] }}'
+                            })">📋 Riwayat</button>
                             @endif
                         </div>
                     </td>
@@ -133,4 +143,5 @@
 </div>
 
 @include('pages.admin.partials.modal-send-cert')
+@include('pages.admin.partials.modal-riwayat-cert')
 @endsection

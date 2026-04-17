@@ -174,9 +174,9 @@ ul  { list-style: none; }
 }
 
 /* ── Navbar ──────────────────────────────────────────────── */
+
 .navbar {
   position: sticky;
-  top: 0;
   z-index: 100;
   background: rgba(250,247,242,.92);
   backdrop-filter: blur(12px);
