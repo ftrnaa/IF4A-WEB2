@@ -57,6 +57,7 @@
                     <th>Pembeli</th>
                     <th>Produk / Motif</th>
                     <th>Tgl Beli</th>
+                    <th>Tgl Berakhir</th>
                     <th>Sertifikat</th>
                     <th>Lisensi</th>
                     <th>Status Kirim</th>
@@ -65,15 +66,25 @@
             </thead>
             <tbody>
                 @php
+                $today = \Carbon\Carbon::today();
                 $certs = [
-                    ['name'=>'Rina Susanti','email'=>'rina@mail.com','product'=>'Sido Mukti','date'=>'13 Apr 2026','cert_sent'=>true,'license_sent'=>true,'img'=>'person4','motif'=>'batik1'],
-                    ['name'=>'Dewi Lestari','email'=>'dewi@mail.com','product'=>'Mega Mendung','date'=>'12 Apr 2026','cert_sent'=>true,'license_sent'=>false,'img'=>'person6','motif'=>'batik3'],
-                    ['name'=>'Sari Kusuma','email'=>'sari@mail.com','product'=>'Parang Rusak','date'=>'11 Apr 2026','cert_sent'=>true,'license_sent'=>true,'img'=>'person8','motif'=>'batik5'],
-                    ['name'=>'Hendra Wijaya','email'=>'hendra@mail.com','product'=>'Kawung','date'=>'10 Apr 2026','cert_sent'=>false,'license_sent'=>false,'img'=>'person10','motif'=>'batik4'],
-                    ['name'=>'Fitriana Putri','email'=>'fitri@mail.com','product'=>'Truntum','date'=>'09 Apr 2026','cert_sent'=>false,'license_sent'=>false,'img'=>'person11','motif'=>'batik2'],
+                    ['name'=>'Rina Susanti',  'email'=>'rina@mail.com',  'product'=>'Sido Mukti',   'date'=>'2026-04-13','cert_sent'=>true, 'license_sent'=>true, 'img'=>'person4', 'motif'=>'batik1'],
+                    ['name'=>'Dewi Lestari',  'email'=>'dewi@mail.com',  'product'=>'Mega Mendung', 'date'=>'2026-04-12','cert_sent'=>true, 'license_sent'=>false,'img'=>'person6', 'motif'=>'batik3'],
+                    ['name'=>'Sari Kusuma',   'email'=>'sari@mail.com',  'product'=>'Parang Rusak', 'date'=>'2026-04-11','cert_sent'=>true, 'license_sent'=>true, 'img'=>'person8', 'motif'=>'batik5'],
+                    ['name'=>'Hendra Wijaya', 'email'=>'hendra@mail.com','product'=>'Kawung',       'date'=>'2026-04-10','cert_sent'=>false,'license_sent'=>false,'img'=>'person10','motif'=>'batik4'],
+                    ['name'=>'Fitriana Putri','email'=>'fitri@mail.com', 'product'=>'Truntum',      'date'=>'2026-04-09','cert_sent'=>false,'license_sent'=>false,'img'=>'person11','motif'=>'batik2'],
                 ];
                 @endphp
                 @foreach($certs as $c)
+                @php
+                    $buyDate    = \Carbon\Carbon::parse($c['date']);
+                    $expiryDate = $buyDate->copy()->addYear();
+                    $daysLeft   = $today->diffInDays($expiryDate, false);
+
+                    if ($daysLeft < 0)       $licenseStatus = 'expired';
+                    elseif ($daysLeft <= 30) $licenseStatus = 'expiring';
+                    else                     $licenseStatus = 'active';
+                @endphp
                 <tr>
                     <td>
                         <div class="admin-table__user">
@@ -90,7 +101,26 @@
                             <span style="font-weight:500;font-size:.85rem">{{ $c['product'] }}</span>
                         </div>
                     </td>
-                    <td style="font-size:.82rem;color:var(--clr-text-muted)">{{ $c['date'] }}</td>
+
+                    {{-- Tgl Beli --}}
+                    <td style="font-size:.82rem;color:var(--clr-text-muted);white-space:nowrap">
+                        {{ $buyDate->format('d M Y') }}
+                    </td>
+
+                    {{-- Tgl Berakhir --}}
+                    <td style="white-space:nowrap">
+                        <p style="font-size:.82rem;font-weight:600;color:{{ $licenseStatus === 'expired' ? '#C0392B' : ($licenseStatus === 'expiring' ? '#B8610A' : 'var(--clr-brown-dark)') }}">
+                            {{ $expiryDate->format('d M Y') }}
+                        </p>
+                        @if($licenseStatus === 'active')
+                            <p style="font-size:.7rem;color:var(--clr-text-muted)">{{ $daysLeft }} hari lagi</p>
+                        @elseif($licenseStatus === 'expiring')
+                            <p style="font-size:.7rem;color:#B8610A;font-weight:600">⚠ {{ $daysLeft }} hari lagi</p>
+                        @elseif($licenseStatus === 'expired')
+                            <p style="font-size:.7rem;color:#C0392B;font-weight:600">Berakhir {{ abs($daysLeft) }} hari lalu</p>
+                        @endif
+                    </td>
+
                     <td>
                         @if($c['cert_sent'])
                             <span class="status-badge status-badge--sent">✓ Terkirim</span>
@@ -122,16 +152,17 @@
                             </button>
                             @if($c['cert_sent'] || $c['license_sent'])
                             <button class="admin-action-btn admin-action-btn--outline"
-                            onclick="openRiwayatModal({
-                                name: '{{ $c['name'] }}',
-                                email: '{{ $c['email'] }}',
-                                product: '{{ $c['product'] }}',
-                                date: '{{ $c['date'] }}',
-                                cert_sent: {{ $c['cert_sent'] ? 'true' : 'false' }},
-                                license_sent: {{ $c['license_sent'] ? 'true' : 'false' }},
-                                img: '{{ $c['img'] }}',
-                                motif: '{{ $c['motif'] }}'
-                            })">📋 Riwayat</button>
+                                onclick="openRiwayatModal({
+                                    name: '{{ $c['name'] }}',
+                                    email: '{{ $c['email'] }}',
+                                    product: '{{ $c['product'] }}',
+                                    date: '{{ $buyDate->format('d M Y') }}',
+                                    expiry: '{{ $expiryDate->format('d M Y') }}',
+                                    cert_sent: {{ $c['cert_sent'] ? 'true' : 'false' }},
+                                    license_sent: {{ $c['license_sent'] ? 'true' : 'false' }},
+                                    img: '{{ $c['img'] }}',
+                                    motif: '{{ $c['motif'] }}'
+                                })">📋 Riwayat</button>
                             @endif
                         </div>
                     </td>

@@ -87,7 +87,7 @@ $myLicenses = [
                 $statusLabel = ['active'=>'Aktif','expiring'=>'Hampir Habis','expired'=>'Kedaluwarsa'];
             @endphp
             <div class="license-item">
-                <img src="https://picsum.photos/seed/{{ $lic['img'] }}/100/100"
+                <img src="{{ asset('images/' . $lic['img'] . '.jpg') }}"
                      class="license-item__img" alt="{{ $lic['name'] }}">
                 <div style="flex:1;min-width:0">
                     <p class="license-item__cat">{{ $lic['cat'] }}</p>

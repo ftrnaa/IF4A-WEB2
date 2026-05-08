@@ -7,9 +7,9 @@
 @php
 $today = \Carbon\Carbon::today();
 $licenses = [
-    ['name'=>'Sido Mukti',  'cat'=>'Klasik',      'date'=>'2026-04-13','amount'=>120000,'img'=>'batik1','method'=>'Transfer Bank'],
-    ['name'=>'Mega Mendung','cat'=>'Pesisir',      'date'=>'2025-12-10','amount'=>135000,'img'=>'batik3','method'=>'GoPay'],
-    ['name'=>'Parang Rusak','cat'=>'Pesisir',      'date'=>'2025-04-05','amount'=>95000, 'img'=>'batik5','method'=>'Transfer Bank'],
+    ['name'=>'Sido Mukti',  'cat'=>'Klasik',  'date'=>'2026-04-13','amount'=>120000,'img'=>'batik1','method'=>'Transfer Bank', 'product_link'=>''],
+    ['name'=>'Mega Mendung','cat'=>'Pesisir', 'date'=>'2025-12-10','amount'=>135000,'img'=>'batik3','method'=>'GoPay',          'product_link'=>'https://tokopedia.com/toko-batikku/mega-mendung-premium'],
+    ['name'=>'Parang Rusak','cat'=>'Pesisir', 'date'=>'2025-04-05','amount'=>95000, 'img'=>'batik5','method'=>'Transfer Bank', 'product_link'=>''],
 ];
 @endphp
 
@@ -51,7 +51,7 @@ $licenses = [
 </div>
 
 <div style="display:flex;flex-direction:column;gap:1.2rem">
-    @foreach($licenses as $lic)
+    @foreach($licenses as $idx => $lic)
     @php
         $buyDate    = \Carbon\Carbon::parse($lic['date']);
         $expiryDate = $buyDate->copy()->addYear();
@@ -66,14 +66,16 @@ $licenses = [
 
         $progressClass = $status === 'expiring' ? 'license-progress__fill--warn'
                        : ($status === 'expired' ? 'license-progress__fill--expired' : '');
+
+        $hasLink = !empty($lic['product_link']);
     @endphp
 
-    <div class="user-card">
+    <div class="user-card license-main-card" id="license-card-{{ $idx }}">
         <div class="user-card__body" style="padding:1.4rem 1.6rem">
             <div style="display:flex;gap:1.2rem;align-items:flex-start;flex-wrap:wrap">
 
                 {{-- Motif Image --}}
-                <img src="https://picsum.photos/seed/{{ $lic['img'] }}/100/100"
+                <img src="{{ asset('images/' . $lic['img'] . '.jpg') }}"
                      alt="{{ $lic['name'] }}"
                      style="width:80px;height:80px;border-radius:10px;object-fit:cover;flex-shrink:0">
 
@@ -117,6 +119,63 @@ $licenses = [
                             @endif
                         </span>
                     </div>
+
+                    {{-- Product Link Section --}}
+                    <div class="product-link-section" style="margin-top:1rem;padding-top:1rem;border-top:1px dashed rgba(200,169,110,.25)">
+                        <p style="font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--clr-text-muted);margin-bottom:.5rem;font-weight:600">
+                            🔗 Link Produk Saya
+                        </p>
+
+                        {{-- Input form --}}
+                        <div class="product-link-input-wrap" id="link-input-wrap-{{ $idx }}" style="{{ $hasLink ? 'display:none' : '' }}">
+                            <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                                <input type="url"
+                                       class="product-link-input"
+                                       id="link-input-{{ $idx }}"
+                                       placeholder="https://tokopedia.com/toko-saya/produk-batik..."
+                                       value="{{ $lic['product_link'] }}"
+                                       style="flex:1;min-width:200px">
+                                <button class="cert-btn cert-btn--dl"
+                                        onclick="saveProductLink({{ $idx }}, '{{ $lic['name'] }}')"
+                                        style="white-space:nowrap;padding:.38rem .85rem">
+                                    💾 Simpan Link
+                                </button>
+                            </div>
+                            <p style="font-size:.68rem;color:var(--clr-text-muted);margin-top:.35rem;opacity:.7">
+                                Tempel link toko atau halaman produk yang menggunakan motif ini.
+                            </p>
+                        </div>
+
+                        {{-- Preview card (shown when link exists) --}}
+                        <div class="product-link-preview" id="link-preview-{{ $idx }}" style="{{ !$hasLink ? 'display:none' : '' }}">
+                            <div class="product-preview-card" id="preview-card-{{ $idx }}"
+                                 data-url="{{ $lic['product_link'] }}">
+                                <div class="ppc__loading" id="ppc-loading-{{ $idx }}">
+                                    <span class="ppc__spinner"></span>
+                                    <span style="font-size:.75rem;color:var(--clr-text-muted)">Memuat detail produk…</span>
+                                </div>
+                                <div class="ppc__content" id="ppc-content-{{ $idx }}" style="display:none">
+                                    <div class="ppc__favicon-wrap">
+                                        <img class="ppc__favicon" id="ppc-favicon-{{ $idx }}" src="" alt="">
+                                        <span class="ppc__domain" id="ppc-domain-{{ $idx }}"></span>
+                                    </div>
+                                    <p class="ppc__title" id="ppc-title-{{ $idx }}"></p>
+                                    <p class="ppc__url" id="ppc-url-{{ $idx }}"></p>
+                                    <div class="ppc__actions">
+                                        <a class="cert-btn cert-btn--dl ppc__open-btn" id="ppc-open-{{ $idx }}" href="#" target="_blank" rel="noopener">
+                                            ↗ Buka Produk
+                                        </a>
+                                        <button class="cert-btn cert-btn--view"
+                                                onclick="editProductLink({{ $idx }})">
+                                            ✏ Ganti Link
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- end product link --}}
+
                 </div>
 
                 {{-- Status + Actions --}}
@@ -148,3 +207,19 @@ $licenses = [
 @include('pages.users.cert-modal')
 
 @endsection
+
+@push('scripts')
+<script>
+// Initialize product link previews on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Auto-load previews for cards that already have a link
+    document.querySelectorAll('.product-preview-card[data-url]').forEach(card => {
+        const url = card.dataset.url;
+        if (url && url.trim() !== '') {
+            const idx = card.id.replace('preview-card-', '');
+            loadProductPreview(idx, url);
+        }
+    });
+});
+</script>
+@endpush

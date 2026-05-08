@@ -4,7 +4,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\AboutController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\KoleksiController;
+use App\Http\Controllers\DetailController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -35,8 +36,11 @@ Route::view('/dashboard/sertifikat', 'pages.users.sertifikat')->name('user.serti
 Route::view('/dashboard/profil', 'pages.users.profil')->name('user.profil');
 
 // ================== KOLEKSI BATIK ==================
-Route::view('/koleksi', 'pages.koleksi')->name('koleksi');
-Route::view('/detail', 'pages.detail')->name('detail');
+Route::get('/koleksi', [KoleksiController::class, 'index'])->name('koleksi');
+Route::get('/koleksi/search', [KoleksiController::class, 'search'])->name('koleksi.search');
+// Route detail batik berdasarkan ID dari API
+Route::get('/koleksi/{id}', [DetailController::class, 'show'])->name('detail');
+
 Route::get('/motif/{slug}', function ($slug) {
 
     $motifs = [

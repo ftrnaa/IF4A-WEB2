@@ -1,276 +1,244 @@
 @extends('layouts.app')
 
-@php
-$motif = (object) [
-    'nama' => 'Parang Kusumo',
-    'harga' => 250000,
-    'thumbnail' => asset('images/batik1.jpg'),
-    'galeri' => [
-        asset('images/batik1.jpg'),
-        asset('images/batik1.jpg'),
-        asset('images/batik1.jpg'),
-    ],
-    'deskripsi' => 'Motif Parang Kusumo melambangkan kekuatan, kesinambungan, dan perjuangan hidup.'
-];
-
-$relatedMotifs = [
-    ['nama'=>'Mega Mendung','kategori'=>'pesisir','harga'=>180000,'img'=>'images/batik2.jpg'],
-    ['nama'=>'Kawung','kategori'=>'keraton','harga'=>300000,'img'=>'images/batik3.jpg'],
-    ['nama'=>'Truntum','kategori'=>'klasik','harga'=>200000,'img'=>'images/batik4.jpg'],
-    ['nama'=>'Sidomukti','kategori'=>'klasik','harga'=>220000,'img'=>'images/batik5.jpg'],
-];
-@endphp
-
-@section('title', $motif->nama)
+@section('title', Str::limit($motif['keyword'] ?? 'Detail Motif', 60))
 
 @push('styles')
-<style>
-body { background:#F5F0E8; font-family:'DM Sans'; }
-
-/* LAYOUT */
-.detail-layout {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:60px;
-    padding:50px 0;
-}
-
-/* IMAGE */
-.main-image-wrap {
-    border-radius:20px;
-    overflow:hidden;
-}
-.main-image-wrap img {
-    width:100%;
-    transition:.4s;
-}
-.main-image-wrap:hover img {
-    transform:scale(1.05);
-}
-
-/* THUMB */
-.thumb-row {
-    display:flex;
-    gap:10px;
-    margin-top:10px;
-}
-.thumb {
-    flex:1;
-    cursor:pointer;
-    border:2px solid transparent;
-}
-.thumb.active { border-color:#C9A84C; }
-
-/* TITLE */
-.motif-nama {
-    font-family:'Playfair Display';
-    font-size:36px;
-}
-.motif-harga {
-    color:#C9A84C;
-    font-size:24px;
-    margin:10px 0 20px;
-}
-
-/* BUTTON */
-.btn-beli {
-    display:block;
-    padding:14px;
-    background:#2C1A0E;
-    color:#fff;
-    text-align:center;
-    border-radius:12px;
-    text-decoration:none;
-    margin-bottom:10px;
-}
-
-/* SECTION */
-.section-box {
-    background:#fff;
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.05);
-}
-.section-box h3 {
-    font-size:15px;
-    margin-bottom:10px;
-}
-
-/* GRID CARD KOLEKSI STYLE */
-.motif-grid {
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:24px;
-}
-
-/* CARD */
-.motif-card {
-    background:#fff;
-    border-radius:16px;
-    overflow:hidden;
-    box-shadow:0 10px 25px rgba(0,0,0,0.05);
-    transition:.3s;
-}
-.motif-card:hover {
-    transform:translateY(-6px);
-}
-
-.card-image-wrap {
-    position:relative;
-    height:200px;
-}
-.card-image-wrap img {
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
-
-/* OVERLAY */
-.card-overlay {
-    position:absolute;
-    inset:0;
-    background:linear-gradient(to top, rgba(0,0,0,.6), transparent);
-    opacity:0;
-    display:flex;
-    align-items:flex-end;
-    padding:12px;
-    transition:.3s;
-}
-.motif-card:hover .card-overlay { opacity:1; }
-
-.overlay-btn {
-    background:#C9A84C;
-    border:none;
-    padding:6px 14px;
-    border-radius:20px;
-    font-size:12px;
-}
-
-/* BADGE */
-.card-badge {
-    position:absolute;
-    top:10px;
-    left:10px;
-    background:#C9A84C;
-    color:#fff;
-    padding:4px 10px;
-    border-radius:20px;
-    font-size:11px;
-}
-
-/* BODY */
-.card-body {
-    padding:14px;
-}
-.card-title {
-    font-family:'Playfair Display';
-    font-size:15px;
-}
-.card-price {
-    color:#5C3D1E;
-}
-
-/* SPACING */
-.related-section {
-    margin-top:70px;
-    padding-bottom:100px;
-}
-
-@media(max-width:900px){
-    .detail-layout{grid-template-columns:1fr;}
-    .motif-grid{grid-template-columns:repeat(2,1fr);}
-}
-</style>
+<link rel="stylesheet" href="{{ asset('css/detail-motif.css') }}">
 @endpush
 
 @section('content')
 
+@php
+use Illuminate\Support\Str;
+$baseUrl = 'https://btx.agunghakase.my.id/api/image/';
+
+$slides = [];
+if (!empty($motif['file_preview'])) {
+    $slides[] = [
+        'url'   => $baseUrl . $motif['file_preview'],
+        'label' => 'Motif Pattern',
+    ];
+}
+foreach ($costumeFiles as $cf) {
+    $slides[] = [
+        'url'   => $baseUrl . $cf,
+        'label' => 'Tampilan Kostum',
+    ];
+}
+if (empty($slides)) {
+    $slides[] = [
+        'url'   => 'https://via.placeholder.com/600x450?text=No+Image',
+        'label' => '',
+    ];
+}
+
+// Ambil nama dari keyword (setelah koma kedua)
+$kwParts  = explode(',', $motif['keyword'] ?? '');
+$namaBatik = isset($kwParts[2]) ? ucfirst(trim($kwParts[2])) : ucfirst(trim($kwParts[0] ?? 'Motif Batik'));
+
+// Tanggal
+$tgl = '';
+if (!empty($motif['created_at'])) {
+    try { $tgl = \Carbon\Carbon::parse($motif['created_at'])->format('d M Y'); }
+    catch (\Exception $e) {}
+}
+
+// Kode
+$fileCode = '';
+if (!empty($motif['file_preview'])) {
+    preg_match('/^(\d{4})/', $motif['file_preview'], $mc);
+    $fileCode = $mc[1] ?? '';
+}
+@endphp
+
 <div class="container">
+
+    {{-- BREADCRUMB --}}
+    <nav class="breadcrumb">
+        <a href="{{ route('koleksi') }}">Koleksi</a>
+        <span class="sep">›</span>
+        <span class="current">{{ Str::limit($namaBatik, 40) }}</span>
+    </nav>
+
     <div class="detail-layout">
 
-        {{-- IMAGE --}}
-        <div>
-            <div class="main-image-wrap">
-                <img id="mainImage" src="{{ $motif->thumbnail }}">
+        {{-- ===== GALLERY ===== --}}
+        <div class="gallery-section">
+            <div class="gallery-wrap" id="galleryWrap">
+
+                {{-- Slide counter --}}
+                @if(count($slides) > 1)
+                <div class="slide-counter" id="slideCounter">1 / {{ count($slides) }}</div>
+                @endif
+
+                <div class="slides" id="slides">
+                    @foreach($slides as $s)
+                    <div class="slide">
+                        <img src="{{ $s['url'] }}" alt="{{ $s['label'] }}" loading="lazy">
+                        @if($s['label'])
+                        <span class="slide-label">{{ $s['label'] }}</span>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
+
+                @if(count($slides) > 1)
+                <button class="slider-btn prev" onclick="changeSlide(-1)" aria-label="Sebelumnya">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+                <button class="slider-btn next" onclick="changeSlide(1)" aria-label="Berikutnya">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <polyline points="9 6 15 12 9 18"/>
+                    </svg>
+                </button>
+                @endif
             </div>
 
-            <div class="thumb-row">
-                @foreach($motif->galeri as $img)
-                <div class="thumb" onclick="switchImage('{{ $img }}', this)">
-                    <img src="{{ $img }}">
+            {{-- Dots --}}
+            @if(count($slides) > 1)
+            <div class="dots-wrap" id="dots">
+                @foreach($slides as $i => $s)
+                <div class="dot {{ $i === 0 ? 'active' : '' }}" onclick="goToSlide({{ $i }})" aria-label="Slide {{ $i + 1 }}"></div>
+                @endforeach
+            </div>
+            @endif
+
+            {{-- Thumbnail strip --}}
+            @if(count($slides) > 1)
+            <div class="thumb-strip" id="thumbStrip">
+                @foreach($slides as $i => $s)
+                <div class="thumb-item {{ $i === 0 ? 'active' : '' }}" onclick="goToSlide({{ $i }})">
+                    <img src="{{ $s['url'] }}" alt="{{ $s['label'] }}" loading="lazy">
                 </div>
                 @endforeach
             </div>
+            @endif
         </div>
 
-        {{-- INFO --}}
-        <div>
-            <h1 class="motif-nama">{{ $motif->nama }}</h1>
-            <p class="motif-harga">Rp {{ number_format($motif->harga,0,',','.') }}</p>
+        {{-- ===== INFO PANEL ===== --}}
+        <div class="info-panel">
 
-            <a href="{{ route('checkout') }}" class="btn-beli">BELI SEKARANG</a>
-
-            <div class="section-box">
-                <h3>Deskripsi Motif</h3>
-                <p>{{ $motif->deskripsi }}</p>
+            {{-- Meta badges --}}
+            <div class="motif-meta">
+                @if($fileCode)
+                    <span class="meta-badge">#{{ $fileCode }}</span>
+                @endif
+                @if(!empty($motif['style']))
+                    <span class="meta-badge">{{ Str::limit($motif['style'], 30) }}</span>
+                @endif
+                @if(!empty($motif['warna']))
+                    <span class="meta-badge">{{ $motif['warna'] }}</span>
+                @endif
+                @if($tgl)
+                    <span class="meta-badge">{{ $tgl }}</span>
+                @endif
             </div>
 
+            {{-- Judul --}}
+            <h1 class="motif-keyword">{{ $namaBatik }}</h1>
+
+            {{-- Harga --}}
+            <p class="motif-harga">Rp 100.000</p>
+            <p class="motif-harga-note">Lisensi personal · Akses download instan</p>
+
+            {{-- Stats bar --}}
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-num">HD</span>
+                    <span class="stat-label">Resolusi</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num">SVG</span>
+                    <span class="stat-label">Format file</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num">{{ count($slides) }}</span>
+                    <span class="stat-label">Preview foto</span>
+                </div>
+            </div>
+
+            {{-- CTA --}}
+            <a href="{{ route('checkout') }}" class="btn-beli">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Beli Lisensi
+            </a>
+            
+
+            <div class="divider"></div>
+
+            {{-- Deskripsi --}}
+            <div class="section-box">
+                <h3>Deskripsi Motif</h3>
+                <p>Motif batik ini mengusung unsur tradisional Nusantara yang dipadukan dengan sentuhan desain modern. Detail pola yang elegan serta komposisi warna yang harmonis menjadikan desain ini cocok untuk kebutuhan fashion, dekorasi, branding, hingga media digital.</p>
+            </div>
+
+            {{-- Yang didapat --}}
             <div class="section-box">
                 <h3>Apa yang Anda Dapatkan</h3>
                 <ul>
-                    <li>File SVG & PNG HD</li>
-                    <li>Resolusi tinggi siap cetak</li>
-                    <li>Akses download instan</li>
+                    <li>File SVG &amp; PNG resolusi tinggi</li>
+                    <li>Siap cetak &amp; penggunaan digital</li>
+                    <li>Akses download instan setelah pembayaran</li>
+                    <li>{{ count($slides) }} foto preview eksklusif</li>
                 </ul>
             </div>
 
+            {{-- Lisensi --}}
             <div class="section-box">
                 <h3>Lisensi</h3>
-                <p>Boleh digunakan untuk kebutuhan komersial tanpa batas.</p>
+                <p>Lisensi bersifat personal dan tidak dapat dialihkan, dibagikan, atau dijual kembali dalam bentuk apa pun termasuk sebagai file digital.</p>
             </div>
-        </div>
 
+            {{-- Link produk --}}
+            <div class="section-box">
+                <h3>Link Produk</h3>
+                <p>Setelah membeli, Anda dapat menambahkan tautan produk yang menggunakan motif ini — pakaian, aksesori, atau produk lain yang telah diproduksi dan dijual.</p>
+            </div>
+
+        </div>
     </div>
 </div>
 
-{{-- RELATED --}}
+{{-- RELATED MOTIFS --}}
+@if(!empty($relatedMotifs))
 <div class="container related-section">
-
-    <h2 style="font-family:Playfair Display; margin-bottom:20px;">
-        Motif <span style="color:#C9A84C;">Serupa</span>
-    </h2>
+    <h2 class="related-title">Motif <span>Serupa</span></h2>
 
     <div class="motif-grid">
         @foreach($relatedMotifs as $rel)
-        <div class="motif-card">
+        @php
+            $relParts = explode(',', $rel['keyword'] ?? '');
+            $relName  = isset($relParts[2])
+                ? Str::limit(ucfirst(trim($relParts[2])), 40)
+                : Str::limit(ucfirst(trim($relParts[0] ?? 'Batik')), 40);
+        @endphp
+        <a href="{{ route('detail', $rel['id']) }}?q={{ urlencode($rel['keyword'] ?? '') }}" class="motif-card">
             <div class="card-image-wrap">
-                <img src="{{ asset($rel['img']) }}">
-                <div class="card-overlay">
-                    <button class="overlay-btn">Lihat Detail</button>
-                </div>
-                <span class="card-badge">{{ ucfirst($rel['kategori']) }}</span>
+                @if(!empty($rel['file_preview']))
+                    <img src="http://btx.agunghakase.my.id/api/image/{{ $rel['file_preview'] }}"
+                         alt="{{ $relName }}" loading="lazy">
+                @else
+                    <img src="https://via.placeholder.com/300x190?text=No+Image" alt="No Image">
+                @endif
+                <span class="card-badge">Batik</span>
             </div>
             <div class="card-body">
-                <h3 class="card-title">{{ $rel['nama'] }}</h3>
-                <p class="card-price">
-                    Rp {{ number_format($rel['harga'],0,',','.') }}
-                </p>
+                <h3 class="card-title">{{ $relName }}</h3>
+                <p class="card-price">Rp 100.000</p>
             </div>
-        </div>
+        </a>
         @endforeach
     </div>
-
 </div>
+@endif
 
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/detail-motif.js') }}"></script>
 <script>
-function switchImage(src, el){
-    document.getElementById('mainImage').src = src;
-    document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));
-    el.classList.add('active');
-}
+    initSlider({{ count($slides) }});
 </script>
 @endpush
