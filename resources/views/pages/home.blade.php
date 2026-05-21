@@ -1,6 +1,29 @@
 @extends('layouts.app')
 
+@push('styles')
+    {{-- Pakai CSS koleksi agar card identik --}}
+    <link rel="stylesheet" href="{{ asset('css/koleksi.css') }}">
+    <style>
+        /* Override grid untuk homepage: selalu 3 kolom di desktop */
+        .collection .motif-grid {
+            grid-template-columns: repeat(3, 1fr);
+            margin-top: 0;
+            padding-bottom: 0;
+        }
+        @media (max-width: 900px) {
+            .collection .motif-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 520px) {
+            .collection .motif-grid { grid-template-columns: repeat(1, 1fr); }
+        }
+
+        /* Card di homepage langsung visible (tanpa IntersectionObserver delay) */
+        .collection .motif-card { opacity: 1; transform: none; }
+    </style>
+@endpush
+
 @section('content')
+
     {{-- ═══════════════════════════════════════════════════ --}}
     {{-- HERO SECTION                                        --}}
     {{-- ═══════════════════════════════════════════════════ --}}
@@ -27,11 +50,11 @@
                 </p>
 
                 <div class="hero__actions fade-up fade-up-d2">
-                    <a href="#koleksi" class="btn btn-primary">
+                    <a href="{{ url('/koleksi') }}" class="btn btn-primary">
                         Lihat Koleksi
                         <span class="arrow">→</span>
                     </a>
-                    <a href="#tentang" class="btn btn-ghost">
+                    <a href="{{ url('/tentang') }}" class="btn btn-ghost">
                         Pelajari lebih lanjut
                         <span class="arrow">→</span>
                     </a>
@@ -55,15 +78,13 @@
 
             {{-- Visual --}}
             <div class="hero__visual" aria-hidden="true">
-    <div class="hero__img-wrap">
-        <img
-            src="{{ asset('images/batik-artisan.png') }}"
-            alt="Penenun batik dengan motif AI"
-            width="460"
-            height="520"
-        >
-                    
-                    </div>
+                <div class="hero__img-wrap">
+                    <img
+                        src="{{ asset('images/landing.jpeg') }}"
+                        alt="Penenun batik dengan motif AI"
+                        width="460"
+                        height="520"
+                    >
                 </div>
             </div>
 
@@ -80,7 +101,7 @@
             <div class="about__images" aria-hidden="true">
                 <img
                     class="about__img about__img--main"
-                    src =" {{ asset('images/08.jpg') }}"
+                    src="{{ asset('images/08.jpg') }}"
                     alt="Detail motif batik"
                 >
                 <img
@@ -107,15 +128,15 @@
 
                 <ul class="about__features">
                     <li class="about__feature">
-                        <span class="about__feature-icon">🎨</span>
+                        <span class="about__feature-icon"></span>
                         <span>Dilatih dari ratusan referensi batik otentik Nusantara</span>
                     </li>
                     <li class="about__feature">
-                        <span class="about__feature-icon">⚡</span>
+                        <span class="about__feature-icon"></span>
                         <span>Motif baru dihasilkan setiap hari secara otomatis</span>
                     </li>
                     <li class="about__feature">
-                        <span class="about__feature-icon">✅</span>
+                        <span class="about__feature-icon"></span>
                         <span>Bebas digunakan untuk produk dan keperluan komersial</span>
                     </li>
                 </ul>
@@ -140,97 +161,98 @@
                     <span class="section-label">Pilihan Editor</span>
                     <h2 class="section-title">Koleksi <span class="italic">Pilihan</span></h2>
                 </div>
-                <a href="#" class="btn btn-ghost">
+                <a href="{{ route('koleksi') }}" class="btn btn-ghost">
                     Lihat Selengkapnya <span class="arrow">→</span>
                 </a>
             </div>
 
-            <div class="collection__grid">
+            <div class="motif-grid" id="homeMotifGrid">
+                @forelse($motifs as $m)
+                @php
+                    $keyword  = $m['keyword'] ?? '';
+                    $parts    = explode(',', $keyword);
+                    $styleName = \Illuminate\Support\Str::limit(trim($parts[0] ?? ''), 35);
+                    $cardName  = isset($parts[2])
+                        ? \Illuminate\Support\Str::limit(ucfirst(trim($parts[2])), 45)
+                        : \Illuminate\Support\Str::limit(ucfirst(trim($parts[0] ?? 'Batik')), 45);
 
-                {{-- Card 1 --}}
-                <article class="product-card">
-                    <a href="#">
-                        <img class="product-card__img"
-                             src="{{ asset('images/batik1.jpg') }}"
-                             alt="Motif Sido Mukti" loading="lazy">
-                        <div class="product-card__body">
-                            <p class="product-card__category">Klasik</p>
-                            <h3 class="product-card__name">Sido Mukti</h3>
-                            <p class="product-card__price">Rp 120.000</p>
+                    // Kode 4 digit dari file_preview
+                    $fileCode = '';
+                    if (!empty($m['file_preview'])) {
+                        preg_match('/^(\d{4})/', $m['file_preview'], $mc);
+                        $fileCode = $mc[1] ?? '';
+                    }
+
+                    // Tanggal
+                    $tgl = '';
+                    if (!empty($m['created_at'])) {
+                        try { $tgl = \Carbon\Carbon::parse($m['created_at'])->format('d M Y'); }
+                        catch (\Exception $e) {}
+                    }
+
+                    // Semua slide: preview + costume
+                    $baseUrl = 'http://btx.agunghakase.my.id/api/image/';
+                    $slides  = [];
+                    if (!empty($m['file_preview']))  $slides[] = $baseUrl . $m['file_preview'];
+                    if (!empty($m['file_costume'])) {
+                        $costumes = is_array($m['file_costume'])
+                            ? $m['file_costume']
+                            : json_decode($m['file_costume'], true) ?? [];
+                        foreach ($costumes as $c) $slides[] = $baseUrl . $c;
+                    }
+                    if (empty($slides)) $slides[] = 'https://via.placeholder.com/300x230?text=No+Image';
+                @endphp
+
+                <a class="motif-card"
+                   href="{{ route('detail', ['id' => $m['id']]) }}?q={{ urlencode($keyword) }}"
+                   data-kategori="{{ $m['kategori'] ?? 'semua' }}">
+
+                    {{-- IMAGE SLIDESHOW --}}
+                    <div class="card-image-wrap" data-slides="{{ json_encode($slides) }}">
+                        @foreach($slides as $i => $src)
+                            <img src="{{ $src }}"
+                                 alt="{{ $cardName }}"
+                                 class="slide-img{{ $i === 0 ? ' active' : '' }}"
+                                 loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+                        @endforeach
+
+                        @if(count($slides) > 1)
+                        <div class="slide-dots">
+                            @foreach($slides as $i => $src)
+                                <span class="dot{{ $i === 0 ? ' active' : '' }}"></span>
+                            @endforeach
                         </div>
-                    </a>
-                </article>
+                        @endif
 
-                {{-- Card 2 --}}
-                <article class="product-card">
-                    <a href="#">
-                        <img class="product-card__img"
-                             src="{{ asset('images/batik3.jpg') }}"
-                             alt="Motif Parang Rusak" loading="lazy">
-                        <div class="product-card__body">
-                            <p class="product-card__category">Pesisir</p>
-                            <h3 class="product-card__name">Parang Rusak</h3>
-                            <p class="product-card__price">Rp 95.000</p>
+                        @if($fileCode)
+                            <span class="card-code">#{{ $fileCode }}</span>
+                        @endif
+                        <span class="card-badge">Batik</span>
+                    </div>
+
+                    {{-- BODY --}}
+                    <div class="card-body">
+                        @if($styleName)
+                            <p class="card-style">{{ $styleName }}</p>
+                        @endif
+                        <h3 class="card-title">{{ $cardName }}</h3>
+
+                        <div class="card-divider"></div>
+
+                        <div class="card-footer">
+                            <p class="card-price">Rp {{ number_format(100000, 0, ',', '.') }}</p>
+                            @if($tgl)
+                                <span class="card-date">{{ $tgl }}</span>
+                            @endif
                         </div>
-                    </a>
-                </article>
+                    </div>
 
-                {{-- Card 3 --}}
-                <article class="product-card">
-                    <a href="#">
-                        <img class="product-card__img"
-                             src="{{ asset('images/batik4.jpg') }}"
-                             alt="Motif Truntum" loading="lazy">
-                        <div class="product-card__body">
-                            <p class="product-card__category">Modern</p>
-                            <h3 class="product-card__name">Truntum</h3>
-                            <p class="product-card__price">Rp 150.000</p>
-                        </div>
-                    </a>
-                </article>
-
-                {{-- Card 4 --}}
-                <article class="product-card">
-                    <a href="#">
-                        <img class="product-card__img"
-                             src="{{ asset('images/batik5.jpg') }}"
-                             alt="Motif Kawung" loading="lazy">
-                        <div class="product-card__body">
-                            <p class="product-card__category">Klasik</p>
-                            <h3 class="product-card__name">Kawung</h3>
-                            <p class="product-card__price">Rp 110.000</p>
-                        </div>
-                    </a>
-                </article>
-
-                {{-- Card 5 --}}
-                <article class="product-card">
-                    <a href="#">
-                        <img class="product-card__img"
-                             src="{{ asset('images/batik2.jpg') }}"
-                             alt="Motif Mega Mendung" loading="lazy">
-                        <div class="product-card__body">
-                            <p class="product-card__category">Pesisir</p>
-                            <h3 class="product-card__name">Mega Mendung</h3>
-                            <p class="product-card__price">Rp 135.000</p>
-                        </div>
-                    </a>
-                </article>
-
-                {{-- Card 6 --}}
-                <article class="product-card">
-                    <a href="#">
-                        <img class="product-card__img"
-                             src="{{ asset('images/batik6.jpg') }}"
-                             alt="Motif Sekar Jagad" loading="lazy">
-                        <div class="product-card__body">
-                            <p class="product-card__category">Kontemporer</p>
-                            <h3 class="product-card__name">Sekar Jagad</h3>
-                            <p class="product-card__price">Rp 175.000</p>
-                        </div>
-                    </a>
-                </article>
-
+                </a>
+                @empty
+                <p style="text-align:center; grid-column:1/-1; color:#9a8f80;">
+                    Tidak ada data batik.
+                </p>
+                @endforelse
             </div>
 
         </div>
@@ -276,8 +298,32 @@
         </div>
     </section>
 
-    {{-- ═══════════════════════════════════════════════════ --}}
-    {{-- CTA BANNER                                          --}}
-    {{-- ═══════════════════════════════════════════════════ --}}
-    
 @endsection
+
+@push('scripts')
+<script>
+/* Slideshow otomatis untuk card di homepage — logika sama persis dengan koleksi.js */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('#homeMotifGrid .motif-card').forEach((card) => {
+        const wrap = card.querySelector('.card-image-wrap');
+        if (!wrap) return;
+
+        const imgs = wrap.querySelectorAll('.slide-img');
+        const dots = wrap.querySelectorAll('.dot');
+        if (imgs.length <= 1) return;
+
+        let current = 0;
+
+        function goTo(index) {
+            imgs[current].classList.remove('active');
+            dots[current]?.classList.remove('active');
+            current = index % imgs.length;
+            imgs[current].classList.add('active');
+            dots[current]?.classList.add('active');
+        }
+
+        setInterval(() => goTo(current + 1), 2000);
+    });
+});
+</script>
+@endpush

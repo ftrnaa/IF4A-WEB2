@@ -204,7 +204,21 @@
                                     @elseif($tx['status'] === 'pending')
                                         <button class="admin-action-btn admin-action-btn--primary">✓ Konfirmasi</button>
                                     @endif
-                                    <button class="admin-action-btn admin-action-btn--outline">👁 Detail</button>
+                                   <button class="admin-action-btn admin-action-btn--outline"
+                                        onclick="openDetailModal({
+                                        id: '{{ $tx['id'] }}',
+                                        name: '{{ $tx['name'] }}',
+                                        email: '{{ $tx['email'] }}',
+                                        product: '{{ $tx['product'] }}',
+                                        cat: '{{ $tx['cat'] }}',
+                                        amount: '{{ number_format($tx['amount'],0,',','.') }}',
+                                        status: '{{ $tx['status'] }}',
+                                        date: '{{ $buyDate->format('d M Y') }}',
+                                        expiry: '{{ isset($expiryDate) ? $expiryDate->format('d M Y') : '-' }}',
+                                        cert: {{ $tx['cert'] ? 'true' : 'false' }},
+                                        img: '{{ $tx['img'] }}',
+                                        motif: '{{ $tx['motif'] }}'
+                                    })">👁 Detail</button>
                                 </div>
                             </td>
                         </tr>
@@ -419,7 +433,21 @@
                             <td>
                                 <div class="admin-actions-group">
                                     <button class="admin-action-btn admin-action-btn--outline">↩ Proses Ulang</button>
-                                    <button class="admin-action-btn admin-action-btn--outline">👁 Detail</button>
+                                   <button class="admin-action-btn admin-action-btn--outline"
+                                    onclick="openDetailModal({
+                                        id: '{{ $tx['id'] }}',
+                                        name: '{{ $tx['name'] }}',
+                                        email: '{{ $tx['email'] }}',
+                                        product: '{{ $tx['product'] }}',
+                                        cat: '{{ $tx['cat'] }}',
+                                        amount: '{{ number_format($tx['amount'],0,',','.') }}',
+                                        status: '{{ $tx['status'] }}',
+                                        date: '{{ $buyDate->format('d M Y') }}',
+                                        expiry: '{{ isset($expiryDate) ? $expiryDate->format('d M Y') : '-' }}',
+                                        cert: {{ $tx['cert'] ? 'true' : 'false' }},
+                                        img: '{{ $tx['img'] }}',
+                                        motif: '{{ $tx['motif'] }}'
+                                    })">👁 Detail</button>
                                 </div>
                             </td>
                         </tr>
@@ -434,5 +462,5 @@
 </div>
 
 @include('pages.admin.partials.modal-send-cert')
-
+@include('pages.admin.partials.modal-detail-trx')
 @endsection

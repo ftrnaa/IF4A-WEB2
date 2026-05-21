@@ -939,3 +939,131 @@
   .user-welcome { flex-direction: column; align-items: flex-start; }
   .profile-avatar-section { flex-direction: column; align-items: flex-start; }
 }
+/* ============================================================
+   BatikAI — Product Link Feature (tambahkan ke user-dashboard.css)
+   ============================================================ */
+
+/* ── Product Link Input ──────────────────────────────────── */
+.product-link-input {
+  padding: .5rem .85rem;
+  font-family: var(--font-body);
+  font-size: .82rem;
+  color: var(--clr-text);
+  background: var(--clr-cream-light);
+  border: 1.5px solid var(--clr-cream-dark);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--dur), box-shadow var(--dur);
+}
+.product-link-input:focus {
+  border-color: var(--clr-gold);
+  box-shadow: 0 0 0 3px rgba(200,169,110,.15);
+}
+.product-link-input::placeholder {
+  color: var(--clr-text-muted);
+  opacity: .55;
+  font-size: .78rem;
+}
+
+/* ── Product Preview Card ────────────────────────────────── */
+.product-preview-card {
+  background: var(--clr-cream-light);
+  border: 1.5px solid rgba(200,169,110,.2);
+  border-radius: var(--radius-sm);
+  padding: .85rem 1rem;
+  transition: border-color var(--dur), box-shadow var(--dur);
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+}
+.product-preview-card:hover {
+  border-color: rgba(200,169,110,.45);
+  box-shadow: 0 2px 12px rgba(200,169,110,.12);
+}
+
+/* loading state */
+.ppc__loading {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  width: 100%;
+}
+
+.ppc__spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(200,169,110,.25);
+  border-top-color: var(--clr-gold);
+  border-radius: 50%;
+  animation: ppcSpin .7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes ppcSpin { to { transform: rotate(360deg); } }
+
+/* content */
+.ppc__content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+
+.ppc__favicon-wrap {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  margin-bottom: .1rem;
+}
+
+.ppc__favicon {
+  width: 16px; height: 16px;
+  border-radius: 3px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.ppc__domain {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--clr-gold);
+  opacity: .85;
+}
+
+.ppc__title {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--clr-brown-dark);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ppc__url {
+  font-size: .7rem;
+  color: var(--clr-text-muted);
+  opacity: .7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ppc__actions {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .3rem;
+  flex-wrap: wrap;
+}
+
+/* error state */
+.ppc__error {
+  font-size: .78rem;
+  color: #C0392B;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  width: 100%;
+}

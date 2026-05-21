@@ -39,7 +39,7 @@ document.querySelectorAll('.product-card, .how__step, .about__feature').forEach(
 });
 
 // ── Navbar scroll shrink ──────────────────────────────────
-const navbar = document.querySelector('.navbar');
-window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 60);
-}, { passive: true });
+//onst navbar = document.querySelector('.navbar');
+//window.addEventListener('scroll', () => {
+  //navbar.classList.toggle('scrolled', window.scrollY > 60);
+//}, { passive: true });

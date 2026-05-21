@@ -14,35 +14,34 @@ $certs = [
     [
         'name'      => 'Sido Mukti',
         'cat'       => 'Klasik',
-        'img'       => 'batik1',
+        'img'       => 'batik1.jpg',
         'date'      => '13 Apr 2026',
         'no'        => 'CERT-2026-001',
         'files'     => [
             ['label'=>'Sertifikat Keaslian', 'icon'=>'📜', 'type'=>'PDF', 'size'=>'248 KB'],
-            ['label'=>'Lisensi Komersial',   'icon'=>'📄', 'type'=>'PDF', 'size'=>'185 KB'],
             ['label'=>'File Motif (SVG)',     'icon'=>'🖼️', 'type'=>'ZIP', 'size'=>'2,4 MB'],
         ],
     ],
     [
         'name'      => 'Mega Mendung',
         'cat'       => 'Pesisir',
-        'img'       => 'batik3',
+        'img'       => 'batik3.jpg',
         'date'      => '10 Des 2025',
         'no'        => 'CERT-2025-089',
         'files'     => [
             ['label'=>'Sertifikat Keaslian', 'icon'=>'📜', 'type'=>'PDF', 'size'=>'231 KB'],
-            ['label'=>'Lisensi Komersial',   'icon'=>'📄', 'type'=>'PDF', 'size'=>'179 KB'],
+            ['label'=>'File Motif (SVG)',     'icon'=>'🖼️', 'type'=>'ZIP', 'size'=>'2,4 MB'],
+           
         ],
     ],
     [
         'name'      => 'Parang Rusak',
         'cat'       => 'Pesisir',
-        'img'       => 'batik5',
+        'img'       => 'batik5.jpg',
         'date'      => '05 Apr 2025',
         'no'        => 'CERT-2025-032',
         'files'     => [
             ['label'=>'Sertifikat Keaslian', 'icon'=>'📜', 'type'=>'PDF', 'size'=>'219 KB'],
-            ['label'=>'Lisensi Komersial',   'icon'=>'📄', 'type'=>'PDF', 'size'=>'166 KB'],
             ['label'=>'File Motif (PNG HD)',  'icon'=>'🖼️', 'type'=>'ZIP', 'size'=>'8,1 MB'],
         ],
     ],
@@ -54,7 +53,7 @@ $certs = [
     <div class="user-card">
         <div class="user-card__header">
             <div style="display:flex;align-items:center;gap:.85rem">
-                <img src="https://picsum.photos/seed/{{ $c['img'] }}/80/80"
+                <img src="{{ asset('images/' . $c['img'] ) }}"
                      style="width:44px;height:44px;border-radius:8px;object-fit:cover" alt="{{ $c['name'] }}">
                 <div>
                     <p style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--clr-brown-dark)">{{ $c['name'] }}</p>

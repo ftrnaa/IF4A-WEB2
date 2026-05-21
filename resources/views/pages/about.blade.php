@@ -56,21 +56,21 @@
 
                 <div class="mission__values">
                     <div class="mission__value">
-                        <div class="mission__value-icon">🏛️</div>
+                        <div class="mission__value-icon"></div>
                         <div>
                             <p class="mission__value-title">Otentisitas</p>
                             <p class="mission__value-desc">Setiap motif terlatih dari referensi batik otentik yang dikurasi langsung bersama pengrajin dan ahli batik Nusantara.</p>
                         </div>
                     </div>
                     <div class="mission__value">
-                        <div class="mission__value-icon">⚡</div>
+                        <div class="mission__value-icon"></div>
                         <div>
                             <p class="mission__value-title">Aksesibilitas</p>
                             <p class="mission__value-desc">Motif berkualitas tinggi yang dulu hanya bisa didapat dari pengrajin kini bisa diakses oleh siapa saja, kapan saja.</p>
                         </div>
                     </div>
                     <div class="mission__value">
-                        <div class="mission__value-icon">♻️</div>
+                        <div class="mission__value-icon"></div>
                         <div>
                             <p class="mission__value-title">Keberlanjutan</p>
                             <p class="mission__value-desc">Sebagian pendapatan kami dialokasikan untuk mendukung komunitas pengrajin batik di seluruh Indonesia.</p>
@@ -199,80 +199,7 @@
         </div>
     </section>
 
-    {{-- ════════════════════════════════════════════════════ --}}
-    {{-- TEAM                                                 --}}
-    {{-- ════════════════════════════════════════════════════ --}}
-    <section class="team section" aria-label="Tim Kami">
-        <div class="container">
-
-            <div class="text-center">
-                <span class="section-label">Di Balik BatikAI</span>
-                <h2 class="section-title">
-                    Tim yang <span class="italic">Berdedikasi</span>
-                </h2>
-                <p class="section-lead" style="margin-inline:auto; margin-top:.8rem">
-                    Gabungan teknolog, desainer, dan pecinta budaya yang percaya
-                    tradisi bisa berjalan beriringan dengan inovasi.
-                </p>
-            </div>
-
-            <div class="team__grid">
-
-                <article class="team-card">
-                    <div class="team-card__img-wrap">
-                        <img class="team-card__img"
-                             src="https://picsum.photos/seed/person1/400/400"
-                             alt="Arif Wicaksono" loading="lazy">
-                        <div class="team-card__overlay"></div>
-                    </div>
-                    <div class="team-card__body">
-                        <h3 class="team-card__name">Arif Wicaksono</h3>
-                        <p class="team-card__role">Co-Founder & CEO</p>
-                        <p class="team-card__bio">
-                            Berlatar belakang teknologi dan kecintaan mendalam pada seni
-                            tradisional Indonesia. Arif memimpin visi BatikAI sejak hari pertama.
-                        </p>
-                    </div>
-                </article>
-
-                <article class="team-card">
-                    <div class="team-card__img-wrap">
-                        <img class="team-card__img"
-                             src="https://picsum.photos/seed/person2/400/400"
-                             alt="Sari Dewi Kusuma" loading="lazy">
-                        <div class="team-card__overlay"></div>
-                    </div>
-                    <div class="team-card__body">
-                        <h3 class="team-card__name">Sari Dewi Kusuma</h3>
-                        <p class="team-card__role">Head of Cultural Research</p>
-                        <p class="team-card__bio">
-                            Ahli batik dan sejarah tekstil Nusantara. Sari memastikan
-                            setiap motif yang kami hasilkan berakar pada nilai budaya yang sahih.
-                        </p>
-                    </div>
-                </article>
-
-                <article class="team-card">
-                    <div class="team-card__img-wrap">
-                        <img class="team-card__img"
-                             src="https://picsum.photos/seed/person3/400/400"
-                             alt="Rizky Pratama" loading="lazy">
-                        <div class="team-card__overlay"></div>
-                    </div>
-                    <div class="team-card__body">
-                        <h3 class="team-card__name">Rizky Pratama</h3>
-                        <p class="team-card__role">Lead AI Engineer</p>
-                        <p class="team-card__bio">
-                            Spesialis model generatif dan computer vision. Rizky membangun
-                            arsitektur AI yang menjadi jantung platform BatikAI.
-                        </p>
-                    </div>
-                </article>
-
-            </div>
-
-        </div>
-    </section>
+    
 
     
 @endsection
