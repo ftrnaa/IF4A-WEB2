@@ -5,7 +5,7 @@
 @php
 $order = (object)[
     'id' => 1,
-    'total' => 250000,
+    'total' => 200000,
     'motif' => (object)[
         'nama' => 'Parang Kusumo'
     ]

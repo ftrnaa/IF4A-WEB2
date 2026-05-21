@@ -6,20 +6,20 @@
 use Illuminate\Support\Str;
 
 $motifs = [
-    ['nama'=>'Parang Kusumo','kategori'=>'klasik','harga'=>250000,'img'=>'images/batik1.jpg'],
-    ['nama'=>'Mega Mendung','kategori'=>'pesisir','harga'=>180000,'img'=>'images/batik2.jpg'],
-    ['nama'=>'Kawung','kategori'=>'keraton','harga'=>300000,'img'=>'images/batik3.jpg'],
-    ['nama'=>'Batik Kontemporer','kategori'=>'modern','harga'=>150000,'img'=>'images/batik4.jpg'],
-    ['nama'=>'Sidomukti','kategori'=>'klasik','harga'=>220000,'img'=>'images/batik5.jpg'],
+    ['nama'=>'Parang Kusumo','kategori'=>'klasik','harga'=>200000,'img'=>'images/batik1.jpg'],
+    ['nama'=>'Mega Mendung','kategori'=>'pesisir','harga'=>200000,'img'=>'images/batik2.jpg'],
+    ['nama'=>'Kawung','kategori'=>'keraton','harga'=>200000,'img'=>'images/batik3.jpg'],
+    ['nama'=>'Batik Kontemporer','kategori'=>'modern','harga'=>200000,'img'=>'images/batik4.jpg'],
+    ['nama'=>'Sidomukti','kategori'=>'klasik','harga'=>200000,'img'=>'images/batik5.jpg'],
     ['nama'=>'Truntum','kategori'=>'keraton','harga'=>200000,'img'=>'images/batik6.jpg'],
-    ['nama'=>'Lasem','kategori'=>'pesisir','harga'=>190000,'img'=>'images/batik7.jpg'],
-    ['nama'=>'Batik Abstrak','kategori'=>'modern','harga'=>170000,'img'=>'images/batik8.jpg'],
+    ['nama'=>'Lasem','kategori'=>'pesisir','harga'=>200000,'img'=>'images/batik7.jpg'],
+    ['nama'=>'Batik Abstrak','kategori'=>'modern','harga'=>200000,'img'=>'images/batik8.jpg'],
 
     // ✅ TAMBAHAN BIAR JADI 12
-    ['nama'=>'Sekar Jagad','kategori'=>'klasik','harga'=>210000,'img'=>'images/batik1.jpg'],
-    ['nama'=>'Batik Bali','kategori'=>'modern','harga'=>260000,'img'=>'images/batik2.jpg'],
-    ['nama'=>'Sido Asih','kategori'=>'keraton','harga'=>230000,'img'=>'images/batik3.jpg'],
-    ['nama'=>'Batik Garutan','kategori'=>'pesisir','harga'=>195000,'img'=>'images/batik4.jpg'],
+    ['nama'=>'Sekar Jagad','kategori'=>'klasik','harga'=>200000,'img'=>'images/batik1.jpg'],
+    ['nama'=>'Batik Bali','kategori'=>'modern','harga'=>200000,'img'=>'images/batik2.jpg'],
+    ['nama'=>'Sido Asih','kategori'=>'keraton','harga'=>200000,'img'=>'images/batik3.jpg'],
+    ['nama'=>'Batik Garutan','kategori'=>'pesisir','harga'=>200000,'img'=>'images/batik4.jpg'],
 ];
 @endphp
 

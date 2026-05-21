@@ -3,7 +3,7 @@
 @php
 $motif = (object) [
     'nama' => 'Parang Kusumo',
-    'harga' => 250000,
+    'harga' => 200000,
     'thumbnail' => asset('images/batik1.jpg'),
     'galeri' => [
         asset('images/batik1.jpg'),
@@ -14,10 +14,17 @@ $motif = (object) [
 ];
 
 $relatedMotifs = [
-    ['nama'=>'Mega Mendung','kategori'=>'pesisir','harga'=>180000,'img'=>'images/batik2.jpg'],
-    ['nama'=>'Kawung','kategori'=>'keraton','harga'=>300000,'img'=>'images/batik3.jpg'],
+    ['nama'=>'Mega Mendung','kategori'=>'pesisir','harga'=>200000,'img'=>'images/batik2.jpg'],
+    ['nama'=>'Kawung','kategori'=>'keraton','harga'=>200000,'img'=>'images/batik3.jpg'],
     ['nama'=>'Truntum','kategori'=>'klasik','harga'=>200000,'img'=>'images/batik4.jpg'],
-    ['nama'=>'Sidomukti','kategori'=>'klasik','harga'=>220000,'img'=>'images/batik5.jpg'],
+    ['nama'=>'Sidomukti','kategori'=>'klasik','harga'=>200000,'img'=>'images/batik5.jpg'],
+];
+
+/* ✅ LINK PRODUK (tanpa card) */
+$linkProduk = [
+    ['nama' => 'Kemeja Batik Parang Premium', 'url' => '#'],
+    ['nama' => 'Dress Batik Elegan', 'url' => '#'],
+    ['nama' => 'Tas Batik Handmade', 'url' => '#'],
 ];
 @endphp
 
@@ -92,19 +99,36 @@ body { background:#F5F0E8; font-family:'DM Sans'; }
     margin-top:20px;
     box-shadow:0 5px 20px rgba(0,0,0,0.05);
 }
-.section-box h3 {
-    font-size:15px;
-    margin-bottom:10px;
+
+/* LINK PRODUK */
+.link-produk-list {
+    margin-top:10px;
+}
+.link-item {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 12px;
+    border-bottom:1px solid #eee;
+    text-decoration:none;
+    color:#2C1A0E;
+    transition:.2s;
+}
+.link-item:hover {
+    background:#f9f6f1;
+}
+.link-item span {
+    font-size:13px;
+    color:#888;
 }
 
-/* GRID CARD KOLEKSI STYLE */
+/* GRID CARD */
 .motif-grid {
     display:grid;
     grid-template-columns:repeat(4,1fr);
     gap:24px;
 }
 
-/* CARD */
 .motif-card {
     background:#fff;
     border-radius:16px;
@@ -112,9 +136,7 @@ body { background:#F5F0E8; font-family:'DM Sans'; }
     box-shadow:0 10px 25px rgba(0,0,0,0.05);
     transition:.3s;
 }
-.motif-card:hover {
-    transform:translateY(-6px);
-}
+.motif-card:hover { transform:translateY(-6px); }
 
 .card-image-wrap {
     position:relative;
@@ -126,28 +148,6 @@ body { background:#F5F0E8; font-family:'DM Sans'; }
     object-fit:cover;
 }
 
-/* OVERLAY */
-.card-overlay {
-    position:absolute;
-    inset:0;
-    background:linear-gradient(to top, rgba(0,0,0,.6), transparent);
-    opacity:0;
-    display:flex;
-    align-items:flex-end;
-    padding:12px;
-    transition:.3s;
-}
-.motif-card:hover .card-overlay { opacity:1; }
-
-.overlay-btn {
-    background:#C9A84C;
-    border:none;
-    padding:6px 14px;
-    border-radius:20px;
-    font-size:12px;
-}
-
-/* BADGE */
 .card-badge {
     position:absolute;
     top:10px;
@@ -159,23 +159,7 @@ body { background:#F5F0E8; font-family:'DM Sans'; }
     font-size:11px;
 }
 
-/* BODY */
-.card-body {
-    padding:14px;
-}
-.card-title {
-    font-family:'Playfair Display';
-    font-size:15px;
-}
-.card-price {
-    color:#5C3D1E;
-}
-
-/* SPACING */
-.related-section {
-    margin-top:70px;
-    padding-bottom:100px;
-}
+.card-body { padding:14px; }
 
 @media(max-width:900px){
     .detail-layout{grid-template-columns:1fr;}
@@ -211,11 +195,31 @@ body { background:#F5F0E8; font-family:'DM Sans'; }
 
             <a href="{{ route('checkout') }}" class="btn-beli">BELI SEKARANG</a>
 
+            {{-- DESKRIPSI --}}
             <div class="section-box">
                 <h3>Deskripsi Motif</h3>
                 <p>{{ $motif->deskripsi }}</p>
             </div>
 
+            {{-- ✅ LINK PRODUK --}}
+            <div class="section-box">
+                <h3>Digunakan pada Produk</h3>
+
+                <div class="link-produk-list">
+                    @foreach($linkProduk as $item)
+                    <a href="{{ $item['url'] }}" target="_blank" class="link-item">
+                        {{ $item['nama'] }}
+                        <span>→ lihat</span>
+                    </a>
+                    @endforeach
+                </div>
+
+                <small style="color:#888;">
+                    Produk dibuat oleh pembeli lisensi motif ini
+                </small>
+            </div>
+
+            {{-- INFO TAMBAHAN --}}
             <div class="section-box">
                 <h3>Apa yang Anda Dapatkan</h3>
                 <ul>
@@ -227,7 +231,8 @@ body { background:#F5F0E8; font-family:'DM Sans'; }
 
             <div class="section-box">
                 <h3>Lisensi</h3>
-                <p>Boleh digunakan untuk kebutuhan komersial tanpa batas.</p>
+                <p>Lisensi tidak dapat dialihkan, dibagikan, atau dijual kembali dalam bentuk apa pun,
+        termasuk sebagai file digital.</p>
             </div>
         </div>
 
@@ -235,8 +240,7 @@ body { background:#F5F0E8; font-family:'DM Sans'; }
 </div>
 
 {{-- RELATED --}}
-<div class="container related-section">
-
+<div class="container" style="margin-top:70px; padding-bottom:100px;">
     <h2 style="font-family:Playfair Display; margin-bottom:20px;">
         Motif <span style="color:#C9A84C;">Serupa</span>
     </h2>
@@ -246,21 +250,15 @@ body { background:#F5F0E8; font-family:'DM Sans'; }
         <div class="motif-card">
             <div class="card-image-wrap">
                 <img src="{{ asset($rel['img']) }}">
-                <div class="card-overlay">
-                    <button class="overlay-btn">Lihat Detail</button>
-                </div>
                 <span class="card-badge">{{ ucfirst($rel['kategori']) }}</span>
             </div>
             <div class="card-body">
-                <h3 class="card-title">{{ $rel['nama'] }}</h3>
-                <p class="card-price">
-                    Rp {{ number_format($rel['harga'],0,',','.') }}
-                </p>
+                <h3>{{ $rel['nama'] }}</h3>
+                <p>Rp {{ number_format($rel['harga'],0,',','.') }}</p>
             </div>
         </div>
         @endforeach
     </div>
-
 </div>
 
 @endsection
