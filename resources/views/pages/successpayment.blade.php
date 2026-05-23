@@ -185,7 +185,7 @@
 
             <div class="order-row">
                 <span>Email</span>
-                <span>{{ $order->email ?? 'email@gmail.com' }}</span>
+                <span>{{ $order->email ?? 'arinikusuma@gmail.com' }}</span>
             </div>
 
             <div class="order-row">

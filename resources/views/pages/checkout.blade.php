@@ -7,7 +7,7 @@ $motif = (object)[
     'id' => 1,
     'nama' => 'Parang Kusumo',
     'kategori' => 'Klasik',
-    'harga' => 250000,
+    'harga' => 200000,
     'thumbnail' => 'images/batik1.jpg'
 ];
 
