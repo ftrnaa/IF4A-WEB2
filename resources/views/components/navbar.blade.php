@@ -9,10 +9,10 @@
             <li><a href="/tentang" class="{{ request()->is('tentang') ? 'active' : '' }}">Tentang</a></li>
         </ul>
 
-        <div class="navbar__actions">
-            <a href="/masuk" class="btn btn-outline">Masuk</a>
-            <a href="/daftar" class="btn btn-primary">Daftar</a>
-        </div>
+        <div class="navbar__actions" id="navbar-auth">
+    <a href="/masuk" class="btn btn-outline">Masuk</a>
+    <a href="/daftar" class="btn btn-primary">Daftar</a>
+</div>
 
         <button class="navbar-toggle" aria-label="Toggle menu" onclick="toggleMobileMenu()">
             <span></span><span></span><span></span>

@@ -6,6 +6,8 @@ use App\Http\Controllers\AboutController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KoleksiController;
 use App\Http\Controllers\DetailController;
+use App\Http\Controllers\AdminProdukController;
+use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,11 +26,11 @@ Route::view('/masuk', 'pages.login')->name('login');
 Route::view('/daftar', 'pages.register')->name('register');
 // dashboard admin
 Route::view('/admin', 'pages.admin.dashboard')->name('admin.dashboard');
+Route::get('/admin/produk', [AdminProdukController::class, 'index'])
+    ->name('admin.produk');
 Route::view('/admin/transaksi', 'pages.admin.transaksi')->name('admin.transaksi');
-Route::view('/admin/produk', 'pages.admin.produk')->name('admin.produk');
 Route::view('/admin/sertifikat', 'pages.admin.sertifikat')->name('admin.sertifikat');
 Route::view('/admin/laporan', 'pages.admin.laporan')->name('admin.laporan');
-
 // dashboard user
 Route::view('/dashboard', 'pages.users.dashboard')->name('user.dashboard');
 Route::view('/dashboard/lisensi', 'pages.users.lisensi')->name('user.lisensi');
@@ -37,7 +39,7 @@ Route::view('/dashboard/profil', 'pages.users.profil')->name('user.profil');
 
 // ================== KOLEKSI BATIK ==================
 Route::get('/koleksi', [KoleksiController::class, 'index'])->name('koleksi');
-Route::get('/koleksi/search', [KoleksiController::class, 'search'])->name('koleksi.search');
+
 // Route detail batik berdasarkan ID dari API
 Route::get('/koleksi/{id}', [DetailController::class, 'show'])->name('detail');
 

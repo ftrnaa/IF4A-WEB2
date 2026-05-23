@@ -29,7 +29,7 @@
     <div class="auth-divider">atau masuk dengan email</div>
 
     {{-- Form --}}
-    <form class="auth-form" action="/masuk" method="POST" novalidate>
+    <form class="auth-form" onsubmit="login(event)">
         @csrf
 
         {{-- Email --}}

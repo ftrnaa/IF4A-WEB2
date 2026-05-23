@@ -8,25 +8,6 @@
 
 @section('content')
 
-@php
-$categories = [
-    ['id'=>1,'name'=>'Klasik',      'desc'=>'Motif tradisional keraton Jawa',      'count'=>3,'color'=>'#7B5E3A'],
-    ['id'=>2,'name'=>'Pesisir',     'desc'=>'Motif batik daerah pesisir utara',    'count'=>2,'color'=>'#2C4A3E'],
-    ['id'=>3,'name'=>'Modern',      'desc'=>'Adaptasi motif dengan gaya kekinian', 'count'=>1,'color'=>'#C8A96E'],
-    ['id'=>4,'name'=>'Kontemporer', 'desc'=>'Eksplorasi bebas berbasis AI',        'count'=>1,'color'=>'#3D6B5C'],
-];
-
-$products = [
-    ['name'=>'Sido Mukti',  'cat'=>'Klasik',      'price'=>120000,'sold'=>214,'status'=>'active','img'=>'batik1'],
-    ['name'=>'Parang Rusak','cat'=>'Pesisir',     'price'=>95000, 'sold'=>187,'status'=>'active','img'=>'batik2'],
-    ['name'=>'Mega Mendung','cat'=>'Pesisir',     'price'=>135000,'sold'=>164,'status'=>'active','img'=>'batik3'],
-    ['name'=>'Kawung',      'cat'=>'Klasik',      'price'=>110000,'sold'=>143,'status'=>'active','img'=>'batik4'],
-    ['name'=>'Truntum',     'cat'=>'Modern',      'price'=>150000,'sold'=>128,'status'=>'active','img'=>'batik5'],
-    ['name'=>'Sekar Jagad', 'cat'=>'Kontemporer', 'price'=>175000,'sold'=>98, 'status'=>'draft', 'img'=>'batik6'],
-];
-
-$swatches = ['#4A3728','#7B5E3A','#C8A96E','#2C4A3E','#3D6B5C','#8B7355','#5C4033','#1A6FA8','#8E44AD','#C0392B'];
-@endphp
 
 {{-- ── Page Header ── --}}
 <div class="admin-page-header">
@@ -78,6 +59,8 @@ $swatches = ['#4A3728','#7B5E3A','#C8A96E','#2C4A3E','#3D6B5C','#8B7355','#5C403
     <div class="produk-grid" id="products-grid">
 
         @foreach($products as $p)
+       
+</div>
         <div class="admin-card product-item"
              data-cat="{{ $p['cat'] }}"
              data-status="{{ $p['status'] }}"
@@ -85,7 +68,7 @@ $swatches = ['#4A3728','#7B5E3A','#C8A96E','#2C4A3E','#3D6B5C','#8B7355','#5C403
 
             <div class="product-item__img-wrap">
                 <img class="product-item__img"
-                     src="{{ asset('images/' . $p['img'] . '.jpg') }}"
+                     src="{{ $p['img'] }}"
                      alt="{{ $p['name'] }}">
                 <span class="status-badge status-badge--{{ $p['status'] === 'active' ? 'paid' : 'pending' }} product-item__status">
                     {{ $p['status'] === 'active' ? 'Aktif' : 'Draft' }}
@@ -94,18 +77,30 @@ $swatches = ['#4A3728','#7B5E3A','#C8A96E','#2C4A3E','#3D6B5C','#8B7355','#5C403
 
             <div class="admin-card__body">
                 <p class="product-item__cat">{{ $p['cat'] }}</p>
-                <p class="product-item__name">{{ $p['name'] }}</p>
+                <p class="product-item__name">
+                    {{ $p['name'] }}
+                </p>
+
+                <p class="product-item__desc">
+                    {{ $p['description'] }}
+                </p>
                 <div class="product-item__meta">
                     <span class="product-item__price">Rp {{ number_format($p['price'],0,',','.') }}</span>
                     <span class="product-item__sold">{{ $p['sold'] }} terjual</span>
                 </div>
                 <div class="admin-actions-group">
                     <button class="admin-action-btn admin-action-btn--outline"
-                            onclick="openProductModal('{{ $p['name'] }}','{{ $p['cat'] }}')">
+                            onclick='openProductModal(
+    @json($p["name"]),
+    @json($p["cat"])
+)'>
                         ✏️ Edit
                     </button>
                     <button class="admin-action-btn admin-action-btn--danger"
-                            onclick="confirmDelete('motif','{{ $p['name'] }}')">
+                            onclick='confirmDelete(
+    "motif",
+    @json($p["name"])
+)'>
                         🗑
                     </button>
                 </div>
@@ -168,11 +163,19 @@ $swatches = ['#4A3728','#7B5E3A','#C8A96E','#2C4A3E','#3D6B5C','#8B7355','#5C403
                         <td>
                             <div class="admin-actions-group">
                                 <button class="admin-action-btn admin-action-btn--outline"
-                                        onclick="openCatModal({{ $cat['id'] }},'{{ $cat['name'] }}','{{ $cat['desc'] }}','{{ $cat['color'] }}')">
+                                        onclick='openCatModal(
+    {{ $cat["id"] }},
+    @json($cat["name"]),
+    @json($cat["desc"]),
+    @json($cat["color"])
+)'>
                                     ✏️ Edit
                                 </button>
                                 <button class="admin-action-btn admin-action-btn--danger"
-                                        onclick="confirmDelete('kategori','{{ $cat['name'] }}')">
+                                        onclick='confirmDelete(
+    "kategori",
+    @json($cat["name"])
+)'>
                                     🗑
                                 </button>
                             </div>

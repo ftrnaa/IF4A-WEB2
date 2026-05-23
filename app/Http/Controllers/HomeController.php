@@ -3,21 +3,32 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
     public function index(): View
-    {
-        $response = Http::get('http://btx.agunghakase.my.id/api/batik/getbatik');
+{
+    $motifs = Cache::rememberForever('home_batiks', function () {
+
+        $response = Http::timeout(30)
+            ->connectTimeout(15)
+            ->retry(3, 200)
+            ->withoutVerifying()
+            ->get('https://btx.agunghakase.my.id/api/batik/getall');
 
         $json = $response->json();
 
-        $motifs = $json['batiks'] ?? [];
+        $data = $json['batiks'] ?? [];
 
-        // 🔥 ambil 6 data saja untuk homepage
-        $motifs = array_slice($motifs, 0, 6);
+        // random sekali lalu simpan permanen
+        shuffle($data);
 
-        return view('pages.home', compact('motifs'));
-    }
+        // ambil 6 data
+        return array_slice($data, 0, 6);
+    });
+
+    return view('pages.home', compact('motifs'));
+}
 }
