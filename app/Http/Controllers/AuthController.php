@@ -2,65 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // ================= REGISTER =================
+    // REGISTER USER
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required',
+            'first_name' => 'required',
+            'last_name' => 'required',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6|confirmed'
+            'password' => 'required|min:6|confirmed',
         ]);
 
         $user = User::create([
-            'name' => $request->name, // kalau mau gabung first + last nanti ubah
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'user'
+            'role' => 'user',
         ]);
 
-        Auth::login($user);
-
-        return redirect('/');
+        return response()->json([
+            'message' => 'Register berhasil',
+            'user' => $user
+        ]);
     }
 
-    // ================= LOGIN =================
+    // LOGIN
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
+        // cek email
+        $user = User::where('email', $request->email)->first();
 
-            $request->session()->regenerate();
-
-            // 🔥 CEK ROLE
-            if (auth()->user()->role === 'admin') {
-                return redirect('/admin');
-            }
-
-            return redirect('/');
+        if (!$user) {
+            return response()->json([
+                'message' => 'Email tidak ditemukan'
+            ], 404);
         }
 
-        return back()->with('error', 'Email atau password salah');
-    }
+        // cek password
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Password salah'
+            ], 401);
+        }
 
-    // ================= LOGOUT =================
-    public function logout(Request $request)
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
+        return response()->json([
+            'message' => 'Login berhasil',
+            'role' => $user->role,
+            'user' => $user,
+        ]);
     }
 }

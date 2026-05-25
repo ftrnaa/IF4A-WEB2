@@ -30,7 +30,7 @@
     <div class="auth-divider">atau daftar dengan email</div>
 
     {{-- Form --}}
-    <form class="auth-form" action="/daftar" method="POST" novalidate>
+    <form class="auth-form" onsubmit="register(event)">
         @csrf
 
         {{-- Name Row --}}

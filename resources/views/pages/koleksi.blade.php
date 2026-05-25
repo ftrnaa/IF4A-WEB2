@@ -3,11 +3,7 @@
 @php
 use Illuminate\Support\Str;
 
-/**
- * Ambil bagian nama dari keyword.
- * Format keyword: "bagian0, bagian1, bagian2, ..."
- * Kita ambil bagian setelah koma KEDUA (index 2).
- */
+
 function getNameFromKeyword(string $keyword): string {
     $parts = explode(',', $keyword);
     // index 2 = setelah koma kedua; fallback ke index 0 jika tidak ada
@@ -15,18 +11,12 @@ function getNameFromKeyword(string $keyword): string {
     return Str::limit(ucfirst($name), 45);
 }
 
-/**
- * Ambil 4 digit pertama dari nama file_preview.
- * Contoh: "3394_185877345531422_..." → "3394"
- */
+
 function getCodeFromFile(string $file): string {
     preg_match('/^(\d{4})/', $file, $m);
     return $m[1] ?? '----';
 }
 
-/**
- * Format tanggal created_at → "15 Apr 2026"
- */
 function formatTanggal(string $date): string {
     try {
         return \Carbon\Carbon::parse($date)->translatedFormat('d M Y');
@@ -50,7 +40,7 @@ function formatTanggal(string $date): string {
 </div>
 
 {{-- SEARCH --}}
-<form action="{{ route('koleksi.search') }}" method="GET" class="search-bar" id="searchForm">
+<form action="{{ route('koleksi') }}" method="GET" class="search-bar" id="searchForm">
     <input
         type="text"
         name="search"
@@ -62,14 +52,31 @@ function formatTanggal(string $date): string {
 </form>
 
 {{-- FILTER --}}
-<div class="filter-bar">
-    <div class="filter-tabs">
-        <button class="filter-tab active" data-kategori="semua">Semua</button>
-        <button class="filter-tab" data-kategori="klasik">Klasik</button>
-        <button class="filter-tab" data-kategori="modern">Modern</button>
-        <button class="filter-tab" data-kategori="keraton">Keraton</button>
-        <button class="filter-tab" data-kategori="pesisir">Pesisir</button>
-    </div>
+<div class="filter-tabs">
+
+    {{-- SEMUA --}}
+    <a
+        href="{{ route('koleksi', ['search' => request('search')]) }}"
+        class="filter-tab {{ !request('kategori') ? 'active' : '' }}"
+    >
+        Semua
+    </a>
+
+    {{-- AUTO KATEGORI --}}
+    @foreach($categories as $cat)
+
+        <a
+            href="{{ route('koleksi', [
+                'kategori' => $cat,
+                'search' => request('search')
+            ]) }}"
+            class="filter-tab {{ request('kategori') == $cat ? 'active' : '' }}"
+        >
+            {{ ucfirst($cat) }}
+        </a>
+
+    @endforeach
+
 </div>
 
 <div class="container">
@@ -179,7 +186,7 @@ function formatTanggal(string $date): string {
         @if($motifs->onFirstPage())
             <span class="page-btn disabled">&laquo;</span>
         @else
-            <a class="page-btn" href="{{ $motifs->previousPageUrl() }}&search={{ request('search') }}">&laquo;</a>
+            <a class="page-btn" href="{{ $motifs->previousPageUrl() }}">&laquo;</a>
         @endif
 
         {{-- Page Numbers --}}
@@ -191,7 +198,7 @@ function formatTanggal(string $date): string {
                 $page == $motifs->lastPage() ||
                 abs($page - $motifs->currentPage()) <= 2
             )
-                <a class="page-btn" href="{{ $url }}&search={{ request('search') }}">{{ $page }}</a>
+                <a class="page-btn" href="{{ $url }}">{{ $page }}</a>
             @elseif(abs($page - $motifs->currentPage()) == 3)
                 <span class="page-btn dots">…</span>
             @endif
@@ -199,7 +206,7 @@ function formatTanggal(string $date): string {
 
         {{-- Next --}}
         @if($motifs->hasMorePages())
-            <a class="page-btn" href="{{ $motifs->nextPageUrl() }}&search={{ request('search') }}">&raquo;</a>
+            <a class="page-btn" href="{{ $motifs->nextPageUrl() }}">&raquo;</a>
         @else
             <span class="page-btn disabled">&raquo;</span>
         @endif
