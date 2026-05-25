@@ -6,6 +6,8 @@ use App\Http\Controllers\AboutController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KoleksiController;
 use App\Http\Controllers\DetailController;
+use App\Http\Controllers\User\ProfilController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -90,3 +92,13 @@ Route::post('/checkout/process', function () {
 Route::view('/payment', 'pages.payment')->name('payment');
 
 Route::view('/succespayment', 'pages.successpayment')->name('successpayment');
+
+Route::get( '/profil',                  [ProfilController::class, 'index'])               ->name('profil');
+
+Route::post('/profil/update-info',      [ProfilController::class, 'updateInfo'])          ->name('profil.update-info');
+
+Route::post('/profil/update-password',  [ProfilController::class, 'updatePassword'])      ->name('profil.update-password');
+
+Route::post('/profil/update-notif',     [ProfilController::class, 'updateNotifications']) ->name('profil.update-notif');
+
+Route::post('/profil/delete-account',   [ProfilController::class, 'deleteAccount'])       ->name('profil.delete-account');
