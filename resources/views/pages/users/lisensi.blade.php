@@ -1,6 +1,6 @@
 @extends('layouts.user-dashboard')
 @section('title', 'Lisensi Saya — BatikAI')
-@section('breadcrumb', 'Lisensi Saya')
+@section('breadcrumb', 'Produk Saya')
 
 @section('content')
 
@@ -14,7 +14,7 @@ $licenses = [
 @endphp
 
 <div class="admin-page-header">
-    <h1>Lisensi Saya</h1>
+    <h1>Produk Saya</h1>
     <p>Kelola semua lisensi motif batik yang sudah kamu beli.</p>
 </div>
 
@@ -184,7 +184,11 @@ $licenses = [
 
                     <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
                         <a href="#" class="cert-btn cert-btn--dl" onclick="userToast('✓ File lisensi diunduh')">
-                            ⬇ Unduh Lisensi (PDF)
+                            ⬇ Unduh Produk (PDF)
+                        </a>
+                          <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
+                        <a href="#" class="cert-btn cert-btn--dl" onclick="userToast('✓ File lisensi diunduh')">
+                            ⬇ UnduhSertifikat (PDF)
                         </a>
                         <button class="cert-btn cert-btn--view"
                                 onclick="viewCert('Lisensi Komersial — {{ $lic['name'] }}','{{ $buyDate->format('d M Y') }}')">

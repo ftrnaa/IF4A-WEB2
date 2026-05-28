@@ -1,104 +1,88 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use App\Helpers\BatikHelper;
 
 class DetailController extends Controller
 {
-    public function show(Request $request, $id)
+    public function show($id)
     {
-        $motif   = null;
-        $all     = [];
-        $keyword = $request->query('q');
+        $cacheKey = "detail_batik_$id";
 
-        if ($keyword) {
-            try {
-                $response = Http::timeout(5)
-                    ->retry(2, 100)
-                    ->get('http://btx.agunghakase.my.id/api/batik/search', [
-                        'q' => $keyword,
-                    ]);
+        $result = Cache::remember($cacheKey, 3600, function () use ($id) {
 
-                if ($response->successful()) {
-                    $batiks = $response->json()['batiks'] ?? [];
-                    $all    = $batiks;
-                    $motif  = collect($batiks)->first(
-                        fn($item) => (string)($item['id'] ?? '') === (string)$id
-                    );
-                }
-            } catch (\Exception $e) {
-                $motif = null;
+            // =========================
+            // GET ALL DATA SEKALI SAJA
+            // =========================
+            $res = Http::timeout(20)
+                ->get('https://btx.agunghakase.my.id/api/batik/getall');
+
+            if (!$res->successful()) {
+                return null;
             }
-        }
 
-        // Fallback: brute force kalau tidak ada keyword
-        if (!$motif) {
-            $page    = 1;
-            $maxPage = 50;
+            $all = $res->json()['batiks'] ?? [];
 
-            while ($page <= $maxPage) {
-                try {
-                    $response = Http::timeout(5)
-                        ->retry(2, 100)
-                        ->get('http://btx.agunghakase.my.id/api/batik/getbatik', [
-                            'page' => $page,
-                        ]);
+            // =========================
+            // CARI MOTIF BERDASARKAN ID
+            // =========================
+            $motif = collect($all)->first(
+                fn($i) => (string)($i['id'] ?? '') === (string)$id
+            );
 
-                    if (!$response->successful()) break;
-
-                    $json   = $response->json();
-                    $batiks = $json['batiks'] ?? [];
-
-                    if (empty($batiks)) break;
-
-                    $all = array_merge($all, $batiks);
-
-                    $found = collect($batiks)->first(
-                        fn($item) => (string)($item['id'] ?? '') === (string)$id
-                    );
-
-                    if ($found) {
-                        $motif = $found;
-                        break;
-                    }
-
-                    $page++;
-                } catch (\Exception $e) {
-                    break;
-                }
+            if (!$motif) {
+                return null;
             }
-        }
 
-        if (!$motif) {
+            return [
+                'motif' => $motif,
+                'all'   => $all
+            ];
+        });
+
+        // =========================
+        // JIKA TIDAK DITEMUKAN
+        // =========================
+        if (!$result) {
+
             return view('pages.detail', [
                 'motif'         => null,
                 'costumeFiles'  => [],
                 'relatedMotifs' => [],
-                'error'         => 'Data tidak ditemukan atau API bermasalah'
+                'error'         => 'Data tidak ditemukan'
             ]);
         }
 
-        // Decode file_costume
-        $costumeFiles = [];
-        if (!empty($motif['file_costume'])) {
-            $decoded = json_decode($motif['file_costume'], true);
-            if (is_array($decoded)) {
-                $costumeFiles = $decoded;
-            }
-        }
+        // =========================
+        // FORMAT DATA DENGAN HELPER
+        // =========================
+        $motif = BatikHelper::format($result['motif']);
 
-        // Related motifs
-        $relatedMotifs = collect($all)
-            ->filter(fn($item) => (string)($item['id'] ?? '') !== (string)$id)
+        // =========================
+        // COSTUME FILES
+        // =========================
+        $costumeFiles = $motif['costume'] ?? [];
+
+        // =========================
+        // RELATED MOTIFS
+        // =========================
+        $relatedMotifs = collect($result['all'])
+            ->filter(fn($i) =>
+                (string)($i['id'] ?? '') !== (string)$id
+            )
+            ->shuffle()
             ->take(4)
+            ->map(fn($i) => BatikHelper::format($i))
             ->values()
             ->toArray();
 
-        return view('pages.detail', [
-            'motif'         => $motif,
-            'costumeFiles'  => $costumeFiles,
-            'relatedMotifs' => $relatedMotifs,
-            'error'         => null
-        ]);
+        return view('pages.detail', compact(
+            'motif',
+            'costumeFiles',
+            'relatedMotifs'
+        ));
     }
 }

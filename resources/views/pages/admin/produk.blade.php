@@ -3,396 +3,384 @@
 @section('breadcrumb', 'Motif & Produk')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/produk.css') }}">
+<link rel="stylesheet" href="{{ asset('css/produk.css') }}">
 @endpush
 
 @section('content')
 
-
-{{-- ── Page Header ── --}}
 <div class="admin-page-header">
     <div>
         <h1>Motif & Produk</h1>
-        <p>Tambah, edit, kelola motif dan kategori batik AI.</p>
-    </div>
-    <div class="produk-header-actions">
-        <button class="admin-action-btn admin-action-btn--outline" onclick="openCatModal()">
-            🏷 Kelola Kategori
-        </button>
-        <button class="admin-action-btn admin-action-btn--primary" onclick="openProductModal()">
-            + Tambah Motif
-        </button>
+        <p>Kelola motif batik AI dan kategori.</p>
     </div>
 </div>
 
-{{-- ── Tabs ── --}}
+{{-- TAB --}}
 <div class="admin-tabs">
-    <button class="admin-tab-btn active" onclick="switchTab(this,'tab-motif')">🎨 Semua Motif</button>
-    <button class="admin-tab-btn" onclick="switchTab(this,'tab-kategori')">🏷 Kategori</button>
+    <button class="admin-tab-btn active" onclick="switchTab(this,'tab-motif')">🎨 Motif</button>
 </div>
 
-{{-- ══════════════════════════════════════
-     TAB: MOTIF
-══════════════════════════════════════ --}}
+{{-- ===================== MOTIF ===================== --}}
 <div class="admin-tab-panel active" id="tab-motif">
 
-    {{-- Filter Bar --}}
-    <div class="produk-filter-bar">
-        <select class="admin-form-select" id="filter-cat" onchange="filterProducts()">
-            <option value="">Semua Kategori</option>
-            @foreach($categories as $cat)
-                <option value="{{ $cat['name'] }}">{{ $cat['name'] }}</option>
-            @endforeach
-        </select>
+    {{-- TOOLBAR --}}
+    <div class="produk-toolbar">
 
-        <select class="admin-form-select" id="filter-status" onchange="filterProducts()">
-            <option value="">Semua Status</option>
-            <option value="active">Aktif</option>
-            <option value="draft">Draft</option>
-        </select>
+        {{-- SEARCH --}}
+        <div class="produk-search-wrap">
+            <span class="produk-search-icon">🔍</span>
+            <input type="text"
+                   id="filter-search"
+                   class="produk-search-input"
+                   placeholder="Cari motif batik..."
+                   oninput="filterProducts()">
+            <button class="produk-search-clear"
+                    id="search-clear-btn"
+                    onclick="clearSearch()">✕</button>
+        </div>
 
-        <input type="text" class="admin-form-input" id="filter-search"
-               placeholder="Cari nama motif..." oninput="filterProducts()">
+        {{-- CATEGORY DROPDOWN (styled same as koleksi) --}}
+        <div class="produk-filter-dropdown-wrap">
+            <div class="produk-filter-dropdown" id="produkFilterDropdown">
+
+                <button class="produk-filter-dropdown-btn" id="produkFilterBtn" type="button">
+                    <span class="produk-filter-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+                        </svg>
+                    </span>
+                    <span class="produk-filter-label" id="produkFilterLabel">Semua Kategori</span>
+                    <span class="produk-filter-arrow">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </span>
+                </button>
+
+                <div class="produk-filter-menu" id="produkFilterMenu">
+                    <button class="produk-filter-item active"
+                            onclick="selectCategory('', 'Semua Kategori', this)"
+                            type="button">
+                        <span class="produk-item-dot"></span>
+                        Semua Kategori
+                    </button>
+                    @foreach($categories as $cat)
+                    <button class="produk-filter-item"
+                            onclick="selectCategory('{{ strtolower($cat['name']) }}', '{{ ucfirst($cat['name']) }}', this)"
+                            type="button">
+                        <span class="produk-item-dot"></span>
+                        {{ ucfirst($cat['name']) }}
+                    </button>
+                    @endforeach
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
-    {{-- Grid --}}
-    <div class="produk-grid" id="products-grid">
+    {{-- COUNTER --}}
+    <div class="produk-counter-info">
+        Menampilkan <strong id="produkCountVisible">{{ count($products) }}</strong> dari
+        <strong>{{ count($products) }}</strong> motif batik
+    </div>
+
+    {{-- GRID --}}
+    <div class="produk-grid" id="produk-grid">
 
         @foreach($products as $p)
-       
-</div>
-        <div class="admin-card product-item"
-             data-cat="{{ $p['cat'] }}"
-             data-status="{{ $p['status'] }}"
-             data-name="{{ strtolower($p['name']) }}">
 
-            <div class="product-item__img-wrap">
-                <img class="product-item__img"
-                     src="{{ $p['img'] }}"
-                     alt="{{ $p['name'] }}">
-                <span class="status-badge status-badge--{{ $p['status'] === 'active' ? 'paid' : 'pending' }} product-item__status">
-                    {{ $p['status'] === 'active' ? 'Aktif' : 'Draft' }}
+        @php
+            $slides = [];
+            if (!empty($p['img'])) $slides[] = $p['img'];
+            if (!empty($p['costume'])) {
+                foreach ($p['costume'] as $c) $slides[] = $c;
+            }
+            if (empty($slides)) $slides[] = 'https://via.placeholder.com/400x300?text=BatikAI';
+
+            $name     = $p['name']        ?? 'Batik';
+            $kategori = $p['kategori']    ?? 'kontemporer';
+            $desc     = $p['description'] ?? '';
+            $price    = $p['price']       ?? 0;
+            $code     = $p['code']        ?? '';
+        @endphp
+
+        <div class="motif-card product-item"
+             data-cat="{{ strtolower($kategori) }}"
+             data-name="{{ strtolower($name) }}"
+             data-anim-index="{{ $loop->index }}">
+
+            {{-- IMAGE SLIDESHOW --}}
+            <div class="card-image-wrap"
+                 onclick="openImageModal({{ $loop->index }})"
+                 style="cursor:zoom-in">
+
+                @foreach($slides as $i => $src)
+                    <img src="{{ $src }}"
+                         class="slide-img {{ $i === 0 ? 'active' : '' }}"
+                         loading="{{ $i === 0 ? 'eager' : 'lazy' }}"
+                         onerror="this.src='https://via.placeholder.com/400x300?text=BatikAI'">
+                @endforeach
+
+                <span class="card-badge">Batik</span>
+
+                {{-- Zoom hint icon --}}
+                <span class="card-zoom-hint">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
                 </span>
+
             </div>
 
-            <div class="admin-card__body">
-                <p class="product-item__cat">{{ $p['cat'] }}</p>
-                <p class="product-item__name">
-                    {{ $p['name'] }}
-                </p>
+            {{-- BODY --}}
+            <div class="card-body">
 
-                <p class="product-item__desc">
-                    {{ $p['description'] }}
-                </p>
-                <div class="product-item__meta">
-                    <span class="product-item__price">Rp {{ number_format($p['price'],0,',','.') }}</span>
-                    <span class="product-item__sold">{{ $p['sold'] }} terjual</span>
-                </div>
-                <div class="admin-actions-group">
-                    <button class="admin-action-btn admin-action-btn--outline"
+                <p class="card-style">{{ $kategori }}</p>
+
+                @if(!empty($code))
+                    <p class="card-code">#{{ $code }}</p>
+                @endif
+
+                <h3 class="card-title">{{ $name }}</h3>
+
+                <p class="card-desc" id="desc-display-{{ $loop->index }}">{{ $desc }}</p>
+
+                <div class="card-divider"></div>
+
+                <div class="card-footer">
+                    <p class="card-price">Rp {{ number_format($price, 0, ',', '.') }}</p>
+
+                    <div class="card-actions">
+                        <button class="card-action-btn card-action-edit"
+                            title="Edit Deskripsi"
                             onclick='openProductModal(
-    @json($p["name"]),
-    @json($p["cat"])
-)'>
-                        ✏️ Edit
-                    </button>
-                    <button class="admin-action-btn admin-action-btn--danger"
-                            onclick='confirmDelete(
-    "motif",
-    @json($p["name"])
-)'>
-                        🗑
-                    </button>
+                                @json($name),
+                                @json($kategori),
+                                @json($price),
+                                @json($desc),
+                                {{ $loop->index }}
+                            )'>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </button>
+                        <button class="card-action-btn card-action-delete"
+                            title="Hapus"
+                            onclick='confirmDelete("motif", @json($name))'>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
+
             </div>
 
         </div>
+
         @endforeach
 
-        <p class="produk-no-results" id="no-results">
-            Tidak ada motif yang cocok dengan filter.
-        </p>
+        <div class="produk-no-results" id="no-results">
+            Tidak ada motif yang ditemukan.
+        </div>
 
     </div>
 
 </div>
 
-{{-- ══════════════════════════════════════
-     TAB: KATEGORI
-══════════════════════════════════════ --}}
+{{-- ===================== KATEGORI ===================== --}}
 <div class="admin-tab-panel" id="tab-kategori">
 
     <div class="cat-tab-header">
-        <button class="admin-action-btn admin-action-btn--primary" onclick="openCatModal()">
+        <button class="admin-action-btn admin-action-btn--primary"
+                onclick="openCatModal()">
             + Tambah Kategori
         </button>
     </div>
 
-    <div class="admin-card">
-        <div class="admin-table-wrap">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Warna</th>
-                        <th>Nama Kategori</th>
-                        <th>Deskripsi</th>
-                        <th>Jumlah Motif</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="cat-table-body">
-                    @foreach($categories as $cat)
-                    <tr data-cat-id="{{ $cat['id'] }}">
-                        <td>
-                            <div class="cat-color-swatch"
-                                 style="background:{{ $cat['color'] }}"></div>
-                        </td>
-                        <td>
-                            <span class="cat-name">{{ $cat['name'] }}</span>
-                        </td>
-                        <td class="cat-desc" style="font-size:.85rem;color:var(--clr-text-muted)">
-                            {{ $cat['desc'] }}
-                        </td>
-                        <td>
-                            <span class="cat-count">{{ $cat['count'] }} motif</span>
-                        </td>
-                        <td>
-                            <span class="status-badge status-badge--paid">Aktif</span>
-                        </td>
-                        <td>
-                            <div class="admin-actions-group">
-                                <button class="admin-action-btn admin-action-btn--outline"
-                                        onclick='openCatModal(
-    {{ $cat["id"] }},
-    @json($cat["name"]),
-    @json($cat["desc"]),
-    @json($cat["color"])
-)'>
-                                    ✏️ Edit
-                                </button>
-                                <button class="admin-action-btn admin-action-btn--danger"
-                                        onclick='confirmDelete(
-    "kategori",
-    @json($cat["name"])
-)'>
-                                    🗑
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Deskripsi</th>
+                <th>Jumlah</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="cat-table-body">
+            @foreach($categories as $cat)
+            <tr>
+                <td><span class="cat-name">{{ $cat['name'] }}</span></td>
+                <td>{{ $cat['desc'] }}</td>
+                <td class="cat-count">{{ $cat['count'] }}</td>
+                <td>
+                    <button class="admin-action-btn admin-action-btn--outline"
+                        onclick='openCatModal({{ $cat["id"] }}, @json($cat["name"]), @json($cat["desc"]))'>
+                        ✏️ Edit
+                    </button>
+                    <button class="admin-action-btn admin-action-btn--danger"
+                        onclick='confirmDelete("kategori", @json($cat["name"]))'>
+                        🗑
+                    </button>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 
 </div>
 
-{{-- ══════════════════════════════════════
-     MODAL: Tambah / Edit Motif
-══════════════════════════════════════ --}}
+{{-- ===================== MODAL IMAGE LIGHTBOX ===================== --}}
+<div class="admin-modal-overlay" id="image-modal" onclick="closeImageModal()">
+    <div class="image-modal-inner" onclick="event.stopPropagation()">
+
+        <button class="image-modal-close" onclick="closeImageModal()">✕</button>
+
+        <div class="image-modal-slideshow" id="imageModalSlideshow">
+            {{-- slides injected by JS --}}
+        </div>
+
+        <div class="image-modal-info">
+            <p class="image-modal-name" id="imageModalName"></p>
+            <p class="image-modal-cat" id="imageModalCat"></p>
+        </div>
+
+        <div class="image-modal-nav">
+            <button class="image-modal-prev" id="imageModalPrev" onclick="imageModalNav(-1)">&#8592;</button>
+            <div class="image-modal-dots" id="imageModalDots"></div>
+            <button class="image-modal-next" id="imageModalNext" onclick="imageModalNav(1)">&#8594;</button>
+        </div>
+
+    </div>
+</div>
+
+{{-- ===================== MODAL EDIT DESKRIPSI ===================== --}}
 <div class="admin-modal-overlay" id="product-modal">
-    <div class="admin-modal" style="max-width:640px">
+    <div class="admin-modal" style="max-width:520px">
+
         <div class="admin-modal__header">
-            <p class="admin-modal__title" id="product-modal-title">Tambah Motif Baru</p>
+            <p class="admin-modal__title" id="product-modal-title">Edit Motif</p>
             <button class="admin-modal__close" onclick="closeProductModal()">✕</button>
         </div>
+
         <div class="admin-modal__body">
-            <form class="admin-form" id="product-form">
 
-                <div class="admin-form-row">
-                    <div class="admin-form-group">
-                        <label class="admin-form-label" for="pf-name">
-                            Nama Motif <span style="color:#E74C3C">*</span>
-                        </label>
-                        <input type="text" class="admin-form-input" id="pf-name"
-                               placeholder="cth. Sido Mukti">
-                    </div>
-                    <div class="admin-form-group">
-                        <label class="admin-form-label" for="pf-cat"
-                               style="display:flex;align-items:center;justify-content:space-between">
-                            <span>Kategori <span style="color:#E74C3C">*</span></span>
-                            <button type="button" class="label-link-btn"
-                                    onclick="closeProductModal(); openCatModal()">
-                                + Kategori Baru
-                            </button>
-                        </label>
-                        <select class="admin-form-select" id="pf-cat">
-                            @foreach($categories as $cat)
-                                <option value="{{ $cat['name'] }}">{{ $cat['name'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+            <div class="admin-form-group">
+                <label>Nama Motif</label>
+                <input type="text" id="pf-name" class="admin-form-input" disabled>
+            </div>
 
-                <div class="admin-form-group">
-                    <label class="admin-form-label" for="pf-desc">
-                        Deskripsi <span style="color:#E74C3C">*</span>
-                    </label>
-                    <textarea class="admin-form-textarea" id="pf-desc"
-                              placeholder="Jelaskan asal-usul, filosofi, dan keunikan motif ini..."></textarea>
-                </div>
+            <div class="admin-form-group">
+                <label>Kategori</label>
+                <input type="text" id="pf-cat" class="admin-form-input" disabled>
+            </div>
 
-                <div class="admin-form-row">
-                    <div class="admin-form-group">
-                        <label class="admin-form-label" for="pf-price">
-                            Harga (Rp) <span style="color:#E74C3C">*</span>
-                        </label>
-                        <input type="number" class="admin-form-input" id="pf-price"
-                               placeholder="120000" min="0">
-                    </div>
-                    <div class="admin-form-group">
-                        <label class="admin-form-label" for="pf-origin">Asal Daerah</label>
-                        <input type="text" class="admin-form-input" id="pf-origin"
-                               placeholder="cth. Yogyakarta">
-                    </div>
-                </div>
+            <div class="admin-form-group">
+                <label>Harga</label>
+                <input type="text" id="pf-price" class="admin-form-input" disabled>
+            </div>
 
-                <div class="admin-form-group">
-                    <label class="admin-form-label">Unggah Gambar Motif</label>
-                    <div class="admin-upload-area"
-                         onclick="document.getElementById('pf-img').click()">
-                        <div class="admin-upload-area__icon" id="pf-upload-icon">🖼️</div>
-                        <p class="admin-upload-area__text">
-                            <strong>Klik untuk unggah</strong> atau seret file ke sini
-                        </p>
-                        <p class="admin-upload-area__text" style="font-size:.72rem;margin-top:.3rem">
-                            PNG, JPG, SVG hingga 10 MB
-                        </p>
-                        <input type="file" id="pf-img" accept="image/*" style="display:none"
-                               onchange="previewMotifImage(this)">
-                    </div>
-                    <img id="pf-img-preview" class="pf-img-preview" alt="Preview motif">
-                </div>
+            <div class="admin-form-group">
+                <label>Deskripsi <span class="label-editable-badge">✏️ Dapat diedit</span></label>
+                <textarea id="pf-desc" class="admin-form-textarea" rows="5"></textarea>
+            </div>
 
-                <div class="admin-form-group">
-                    <label class="admin-form-label" for="pf-status">Status</label>
-                    <select class="admin-form-select" id="pf-status">
-                        <option value="active">Aktif — langsung tampil di katalog</option>
-                        <option value="draft">Draft — tersimpan, tidak tampil</option>
-                    </select>
-                </div>
+            <input type="hidden" id="pf-card-index">
 
-            </form>
         </div>
+
         <div class="admin-modal__footer">
             <button class="admin-action-btn admin-action-btn--outline"
                     onclick="closeProductModal()">Batal</button>
             <button class="admin-action-btn admin-action-btn--primary"
-                    style="padding:.6rem 1.6rem"
-                    onclick="saveProduct()">
-                💾 Simpan Motif
-            </button>
+                    onclick="saveProduct()">Simpan</button>
         </div>
+
     </div>
 </div>
 
-{{-- ══════════════════════════════════════
-     MODAL: Tambah / Edit Kategori
-══════════════════════════════════════ --}}
+{{-- ===================== MODAL KATEGORI ===================== --}}
 <div class="admin-modal-overlay" id="cat-modal">
-    <div class="admin-modal" style="max-width:480px">
+    <div class="admin-modal">
+
         <div class="admin-modal__header">
-            <p class="admin-modal__title" id="cat-modal-title">Tambah Kategori Baru</p>
+            <p class="admin-modal__title">Kategori</p>
             <button class="admin-modal__close" onclick="closeCatModal()">✕</button>
         </div>
+
         <div class="admin-modal__body">
-            <form class="admin-form" id="cat-form">
 
-                <div class="admin-form-group">
-                    <label class="admin-form-label" for="cf-name">
-                        Nama Kategori <span style="color:#E74C3C">*</span>
-                    </label>
-                    <input type="text" class="admin-form-input" id="cf-name"
-                           placeholder="cth. Batik Papua"
-                           oninput="updateCatPreview()">
-                    <p class="admin-form-hint">Gunakan nama yang singkat dan deskriptif.</p>
-                </div>
+            <div class="admin-form-group">
+                <label>Nama</label>
+                <input type="text" id="cf-name" class="admin-form-input">
+            </div>
 
-                <div class="admin-form-group">
-                    <label class="admin-form-label" for="cf-desc">Deskripsi</label>
-                    <textarea class="admin-form-textarea" id="cf-desc"
-                              placeholder="Jelaskan ciri khas dan asal motif kategori ini..."></textarea>
-                </div>
+            <div class="admin-form-group">
+                <label>Deskripsi</label>
+                <textarea id="cf-desc" class="admin-form-textarea"></textarea>
+            </div>
 
-                <div class="admin-form-group">
-                    <label class="admin-form-label">Warna Label</label>
-                    <div class="cat-color-picker-wrap">
-                        <input type="color" id="cf-color" value="#7B5E3A"
-                               class="cat-color-input"
-                               oninput="updateCatPreview()">
-                        <div class="cat-swatches">
-                            @foreach($swatches as $sw)
-                            <div class="color-swatch"
-                                 data-color="{{ $sw }}"
-                                 style="background:{{ $sw }}"
-                                 title="{{ $sw }}"
-                                 onclick="pickSwatch('{{ $sw }}')"></div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
-                <div class="admin-form-group">
-                    <label class="admin-form-label">Preview Tampilan</label>
-                    <div class="cat-preview-box">
-                        <div class="cat-preview-dot" id="cat-preview-dot"></div>
-                        <div>
-                            <p class="cat-preview-name" id="cat-preview-name">Nama Kategori</p>
-                            <p class="cat-preview-badge" id="cat-preview-badge">KATEGORI</p>
-                        </div>
-                    </div>
-                </div>
-
-            </form>
         </div>
+
         <div class="admin-modal__footer">
             <button class="admin-action-btn admin-action-btn--outline"
                     onclick="closeCatModal()">Batal</button>
             <button class="admin-action-btn admin-action-btn--primary"
-                    style="padding:.6rem 1.6rem"
-                    onclick="saveCategory()">
-                💾 Simpan Kategori
-            </button>
+                    onclick="saveCategory()">Simpan</button>
         </div>
+
     </div>
 </div>
 
-{{-- ══════════════════════════════════════
-     MODAL: Konfirmasi Hapus
-══════════════════════════════════════ --}}
+{{-- ===================== DELETE MODAL ===================== --}}
 <div class="admin-modal-overlay" id="delete-modal">
-    <div class="admin-modal" style="max-width:380px">
+    <div class="admin-modal" style="max-width:360px">
+
         <div class="admin-modal__header">
-            <p class="admin-modal__title" style="color:#C0392B">🗑 Konfirmasi Hapus</p>
+            <p class="admin-modal__title">Hapus?</p>
             <button class="admin-modal__close" onclick="closeDeleteModal()">✕</button>
         </div>
+
         <div class="admin-modal__body">
-            <p style="font-size:.9rem;color:var(--clr-text-muted);line-height:1.65">
-                Yakin ingin menghapus
-                <strong id="delete-target-name" style="color:var(--clr-brown-dark)"></strong>?
-                Tindakan ini tidak bisa dibatalkan.
-            </p>
+            Yakin ingin menghapus <strong id="delete-target-name"></strong>?
         </div>
+
         <div class="admin-modal__footer">
             <button class="admin-action-btn admin-action-btn--outline"
                     onclick="closeDeleteModal()">Batal</button>
-            <button class="admin-action-btn"
-                    style="background:#C0392B;color:#fff;border-color:#C0392B;padding:.6rem 1.4rem"
-                    onclick="doDelete()">
-                Ya, Hapus
-            </button>
+            <button class="admin-action-btn admin-action-btn--danger"
+                    onclick="doDelete()">Hapus</button>
         </div>
+
     </div>
 </div>
 
 @endsection
 
 @push('scripts')
-{{-- Seed initial category data for produk.js --}}
 <script>
     window.BATIK_CATEGORIES = @json($categories);
+
+    // Build product data for image modal
+    window.PRODUK_DATA = [
+        @foreach($products as $p)
+        @php
+            $slides = [];
+            if (!empty($p['img'])) $slides[] = $p['img'];
+            if (!empty($p['costume'])) foreach ($p['costume'] as $c) $slides[] = $c;
+            if (empty($slides)) $slides[] = 'https://via.placeholder.com/400x300?text=BatikAI';
+        @endphp
+        {
+            name: @json($p['name'] ?? ''),
+            kategori: @json($p['kategori'] ?? ''),
+            slides: @json($slides),
+        },
+        @endforeach
+    ];
 </script>
 <script src="{{ asset('js/produk.js') }}"></script>
 @endpush

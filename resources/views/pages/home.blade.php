@@ -168,43 +168,51 @@
 
             <div class="motif-grid" id="homeMotifGrid">
                 @forelse($motifs as $m)
-                @php
-                    $keyword  = $m['keyword'] ?? '';
-                    $parts    = explode(',', $keyword);
-                    $styleName = \Illuminate\Support\Str::limit(trim($parts[0] ?? ''), 35);
-                    $cardName  = isset($parts[2])
-                        ? \Illuminate\Support\Str::limit(ucfirst(trim($parts[2])), 45)
-                        : \Illuminate\Support\Str::limit(ucfirst(trim($parts[0] ?? 'Batik')), 45);
+               @php
+    $keyword = $m['name'] ?? 'Motif Batik';
 
-                    // Kode 4 digit dari file_preview
-                    $fileCode = '';
-                    if (!empty($m['file_preview'])) {
-                        preg_match('/^(\d{4})/', $m['file_preview'], $mc);
-                        $fileCode = $mc[1] ?? '';
-                    }
+    $styleName = \Illuminate\Support\Str::limit(
+        ucfirst($m['kategori'] ?? 'Kontemporer'),
+        35
+    );
 
-                    // Tanggal
-                    $tgl = '';
-                    if (!empty($m['created_at'])) {
-                        try { $tgl = \Carbon\Carbon::parse($m['created_at'])->format('d M Y'); }
-                        catch (\Exception $e) {}
-                    }
+    $cardName = \Illuminate\Support\Str::limit(
+        ucfirst($m['name'] ?? 'Motif Batik'),
+        45
+    );
 
-                    // Semua slide: preview + costume
-                    $baseUrl = 'http://btx.agunghakase.my.id/api/image/';
-                    $slides  = [];
-                    if (!empty($m['file_preview']))  $slides[] = $baseUrl . $m['file_preview'];
-                    if (!empty($m['file_costume'])) {
-                        $costumes = is_array($m['file_costume'])
-                            ? $m['file_costume']
-                            : json_decode($m['file_costume'], true) ?? [];
-                        foreach ($costumes as $c) $slides[] = $baseUrl . $c;
-                    }
-                    if (empty($slides)) $slides[] = 'https://via.placeholder.com/300x230?text=No+Image';
-                @endphp
+    // kode preview
+    $fileCode = $m['code'] ?? '';
+
+    // tanggal
+    $tgl = '';
+    if (!empty($m['created_at'])) {
+        try {
+            $tgl = \Carbon\Carbon::parse($m['created_at'])
+                ->format('d M Y');
+        } catch (\Exception $e) {}
+    }
+
+    // slideshow images
+    $slides = [];
+
+    if (!empty($m['img'])) {
+        $slides[] = $m['img'];
+    }
+
+    if (!empty($m['costume']) && is_array($m['costume'])) {
+        foreach ($m['costume'] as $c) {
+            $slides[] = $c;
+        }
+    }
+
+    if (empty($slides)) {
+        $slides[] = 'https://via.placeholder.com/300x230?text=No+Image';
+    }
+@endphp
 
                 <a class="motif-card"
-                   href="{{ route('detail', ['id' => $m['id']]) }}?q={{ urlencode($keyword) }}"
+                   href="{{ route('detail', ['id' => $m['id']]) }}"
                    data-kategori="{{ $m['kategori'] ?? 'semua' }}">
 
                     {{-- IMAGE SLIDESHOW --}}
@@ -240,7 +248,9 @@
                         <div class="card-divider"></div>
 
                         <div class="card-footer">
-                            <p class="card-price">Rp {{ number_format(100000, 0, ',', '.') }}</p>
+                            <p class="card-price">
+    Rp {{ number_format($m['price'] ?? 0, 0, ',', '.') }}
+</p>
                             @if($tgl)
                                 <span class="card-date">{{ $tgl }}</span>
                             @endif
