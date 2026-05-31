@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KoleksiController;
 use App\Http\Controllers\DetailController;
 use App\Http\Controllers\AdminProdukController;
+use App\Http\Controllers\ProfilController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ForgotPasswordController;
 use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
@@ -23,20 +26,77 @@ Route::view('/tentang', 'pages.about')->name('about');
 
 
 Route::view('/masuk', 'pages.login')->name('login');
+
 Route::view('/daftar', 'pages.register')->name('register');
+
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login.process');
+
+Route::post('/register', [AuthController::class, 'register'])
+    ->name('register.process');
+
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->name('logout');
+
+Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])
+    ->name('google.login');
+
+Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])
+    ->name('google.callback');
+    
+
+// STEP 1: Form email
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])
+    ->name('password.request');
+
+// STEP 1: Kirim OTP
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp'])
+    ->name('password.sendOtp');
+
+// STEP 2: Verifikasi OTP
+Route::post('/forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])
+    ->name('password.verifyOtp');
+
+// STEP 3: Reset Password (FINAL)
+Route::post('/reset-password-with-otp', [ForgotPasswordController::class, 'resetPassword'])
+    ->name('password.resetWithOtp');
 // dashboard admin
-Route::view('/admin', 'pages.admin.dashboard')->name('admin.dashboard');
-Route::get('/admin/produk', [AdminProdukController::class, 'index'])
-    ->name('admin.produk');
-Route::view('/admin/transaksi', 'pages.admin.transaksi')->name('admin.transaksi');
-Route::view('/admin/sertifikat', 'pages.admin.sertifikat')->name('admin.sertifikat');
-Route::view('/admin/laporan', 'pages.admin.laporan')->name('admin.laporan');
+Route::middleware(['auth', 'admin'])->group(function () {
+
+    Route::view('/admin', 'pages.admin.dashboard')
+        ->name('admin.dashboard');
+
+    Route::get('/admin/produk', [AdminProdukController::class, 'index'])
+        ->name('admin.produk');
+
+    Route::view('/admin/transaksi', 'pages.admin.transaksi')
+        ->name('admin.transaksi');
+
+    Route::view('/admin/sertifikat', 'pages.admin.sertifikat')
+        ->name('admin.sertifikat');
+
+    Route::view('/admin/laporan', 'pages.admin.laporan')
+        ->name('admin.laporan');
+});
 // dashboard user
 Route::view('/dashboard', 'pages.users.dashboard')->name('user.dashboard');
 Route::view('/dashboard/lisensi', 'pages.users.lisensi')->name('user.lisensi');
 Route::view('/dashboard/sertifikat', 'pages.users.sertifikat')->name('user.sertifikat');
-Route::view('/dashboard/profil', 'pages.users.profil')->name('user.profil');
+// profil user 
+Route::get('/dashboard/profil', [ProfilController::class, 'index'])
+    ->name('user.profil');
 
+Route::post('/dashboard/profil/update-info', [ProfilController::class, 'updateInfo'])
+    ->name('user.profile.update-info');
+
+Route::post('/dashboard/profil/update-password', [ProfilController::class, 'updatePassword'])
+    ->name('user.profile.update-password');
+
+Route::post('/dashboard/profil/update-notifications', [ProfilController::class, 'updateNotifications'])
+    ->name('user.profile.update-notif');
+
+Route::delete('/dashboard/profil/delete-account', [ProfilController::class, 'deleteAccount'])
+    ->name('user.profile.delete-account');
 // ================== KOLEKSI BATIK ==================
 Route::get('/koleksi', [KoleksiController::class, 'index'])->name('koleksi');
 

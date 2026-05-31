@@ -2,7 +2,7 @@
 // app/Http/Controllers/User/ProfileController.php
 // Fungsi: Menampilkan & mengupdate data profil, sandi, notifikasi, dan hapus akun
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -11,14 +11,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
-class ProfileController extends Controller
+class ProfilController extends Controller
 {
     // ── 1. Tampilkan halaman profil ───────────────────────────────────────
     public function index()
     {
-        return view('user.profile', [
-            'user' => Auth::user(),
-        ]);
+        return view('pages.users.profil', [
+    'user' => Auth::user(),
+]);
     }
 
     // ── 2. Simpan perubahan data pribadi + avatar ─────────────────────────
@@ -133,4 +133,5 @@ class ProfileController extends Controller
         return redirect('/')
                ->with('info', 'Akun kamu telah dihapus. Terima kasih telah menggunakan BatikAI.');
     }
+    
 }

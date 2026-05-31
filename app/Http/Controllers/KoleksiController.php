@@ -41,9 +41,31 @@ class KoleksiController extends Controller
         });
 
         // helper transform (SAMA DENGAN ADMIN)
-        $all = collect($raw)
-            ->map(fn($item) => BatikHelper::format($item))
-            ->toArray();
+        // helper transform + nama otomatis dari keyword
+$all = collect($raw)
+    ->map(function ($item) {
+
+        $formatted = BatikHelper::format($item);
+
+        $keyword = strtolower(trim($item['keyword'] ?? ''));
+
+        // pecah keyword jadi array kata
+        $words = explode(' ', $keyword);
+
+        // cari posisi kata "batik"
+        $batikIndex = array_search('batik', $words);
+
+        if ($batikIndex !== false) {
+
+            // ambil 3 kata setelah "batik"
+            $nameWords = array_slice($words, $batikIndex + 1, 3);
+
+            $formatted['name'] = ucwords(implode(' ', $nameWords));
+        }
+
+        return $formatted;
+    })
+    ->toArray();
 
         // =========================
         // FILTER KATEGORI

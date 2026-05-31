@@ -34,10 +34,9 @@
             {{-- Avatar --}}
             <div class="profile-avatar-section">
                 <div class="profile-avatar-wrap">
-                    <img src="{{ $user->avatar_url }}"
-                         class="profile-avatar"
-                         alt="Foto profil"
-                         id="profile-avatar-img">
+                    <img src="{{ optional($user)->avatar
+    ? asset('storage/' . $user->avatar)
+    : asset('images/default-avatar.png') }}" alt="Avatar">
                     <label class="profile-avatar-edit"
                            for="avatar-trigger"
                            title="Ganti foto">✏</label>
@@ -289,12 +288,16 @@
                         <p>Hapus Akun</p>
                         <p>Akun dan semua data akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</p>
                     </div>
-                    <form method="POST"
-                          action="{{ route('user.profile.delete-account') }}"
-                          onsubmit="return confirm('Yakin ingin menghapus akun?\nTindakan ini TIDAK BISA dibatalkan.')">
-                        @csrf
-                        <button type="submit" class="btn-danger">Hapus Akun</button>
-                    </form>
+                   <form method="POST"
+      action="{{ route('user.profile.delete-account') }}"
+      onsubmit="return confirm('Yakin ingin menghapus akun?\nTindakan ini TIDAK BISA dibatalkan.')">
+    @csrf
+    @method('DELETE')
+
+    <button type="submit" class="btn-danger">
+        Hapus Akun
+    </button>
+</form>
                 </div>
             </div>
         </div>

@@ -19,17 +19,19 @@
 
     {{-- Social Login --}}
     <div class="auth-social" style="margin-bottom:1.5rem">
-        <button class="btn-social" type="button">
-            <span class="btn-social__icon">G</span>
-            Lanjutkan dengan Google
-        </button>
+       <a href="{{ route('google.login') }}" class="btn-social">
+    <span class="btn-social__icon">G</span>
+    Lanjutkan dengan Google
+</a>
     </div>
 
     {{-- Divider --}}
     <div class="auth-divider">atau masuk dengan email</div>
 
     {{-- Form --}}
-    <form class="auth-form" onsubmit="login(event)">
+    <form class="auth-form"
+      action="{{ route('login.process') }}"
+      method="POST">
         @csrf
 
         {{-- Email --}}
@@ -50,7 +52,7 @@
         <div class="form-group">
             <div class="form-group--row">
                 <label class="form-label" for="password">Kata Sandi</label>
-                <a href="/lupa-sandi" class="forgot-link">Lupa sandi?</a>
+                <a href="/forgot-password" class="forgot-link">Lupa sandi?</a>
             </div>
             <div class="form-input-wrap">
                 <input

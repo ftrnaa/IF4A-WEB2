@@ -89,90 +89,7 @@ document.querySelectorAll('.form-input').forEach(input => {
   });
 });
 
-// ─────────────────────────────────────────────
-// LOGIN API
-// ─────────────────────────────────────────────
-async function login(event) {
-  event.preventDefault();
 
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-
-  try {
-    const res = await fetch('http://127.0.0.1:8000/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || 'Login gagal');
-      return;
-    }
-
-    // simpan session
-    localStorage.setItem('user', JSON.stringify(data.user));
-    localStorage.setItem('role', data.role);
-
-    // redirect
-    if (data.role === 'admin') {
-    window.location.href = '/admin';
-} else {
-    window.location.href = '/dashboard';
-}
-
-  } catch (err) {
-    console.error(err);
-    alert('Server error');
-  }
-}
-
-// ─────────────────────────────────────────────
-// REGISTER API
-// ─────────────────────────────────────────────
-async function register(event) {
-  event.preventDefault();
-
-  const first_name = document.getElementById('first_name').value;
-  const last_name = document.getElementById('last_name').value;
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const password_confirmation = document.getElementById('password_confirmation').value;
-
-  try {
-    const res = await fetch('http://127.0.0.1:8000/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        first_name,
-        last_name,
-        email,
-        password,
-        password_confirmation
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || 'Register gagal');
-      return;
-    }
-
-    alert('Register berhasil, silakan login');
-    window.location.href = '/masuk';
-
-  } catch (err) {
-    console.error(err);
-    alert('Server error');
-  }
-}
 // Navbar Auth State
 document.addEventListener('DOMContentLoaded', () => {
   const authWrap = document.getElementById('navbar-auth');
@@ -232,13 +149,20 @@ window.addEventListener('click', function (e) {
   }
 });
 
-// ─────────────────────────────────────────────
-// Logout
-// ─────────────────────────────────────────────
 function logout() {
-
-  localStorage.removeItem('user');
-  localStorage.removeItem('role');
-
-  window.location.href = '/';
+  fetch('/logout', {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute('content'),
+      'Accept': 'application/json',
+    }
+  })
+  .then(() => {
+    window.location.href = '/';
+  })
+  .catch(err => {
+    console.error(err);
+  });
 }
