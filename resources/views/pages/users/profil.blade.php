@@ -1,3 +1,16 @@
+{{--
+    resources/views/user/profile.blade.php
+
+    PERBAIKAN vs versi lama:
+    - Route names disesuaikan dengan web.php baru
+    - Form hapus akun pakai @method('DELETE')
+    - Avatar preview & sync ke form input tetap ada
+    - Error box per-form sudah terpisah
+--}}
+@php
+$user = $user ?? auth()->user();
+@endphp
+
 @extends('layouts.user-dashboard')
 @section('title', 'Profil Saya — BatikAI')
 @section('breadcrumb', 'Profil Saya')
@@ -11,19 +24,28 @@
 
 {{-- ── Flash Toast ───────────────────────────────────────────────────────── --}}
 @if(session('success'))
-    <script>document.addEventListener('DOMContentLoaded',()=>userToast('✓ {{ session('success') }}'))</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () =>
+            userToast('✓ {{ session('success') }}'));
+    </script>
 @endif
 @if(session('success_password'))
-    <script>document.addEventListener('DOMContentLoaded',()=>userToast('🔑 {{ session('success_password') }}'))</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () =>
+            userToast('🔑 {{ session('success_password') }}'));
+    </script>
 @endif
 @if(session('success_notif'))
-    <script>document.addEventListener('DOMContentLoaded',()=>userToast('🔔 {{ session('success_notif') }}'))</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () =>
+            userToast('🔔 {{ session('success_notif') }}'));
+    </script>
 @endif
 
 <div class="user-grid-2">
 
     {{-- ══════════════════════════════════════════════════════════════════ --}}
-    {{-- KARTU KIRI: Informasi Pribadi                                     --}}
+    {{-- KOLOM KIRI: Informasi Pribadi                                     --}}
     {{-- ══════════════════════════════════════════════════════════════════ --}}
     <div class="user-card">
         <div class="user-card__header">
@@ -31,17 +53,17 @@
         </div>
         <div class="user-card__body">
 
-            {{-- Avatar --}}
+            {{-- ── Avatar preview ──────────────────────────────────────── --}}
             <div class="profile-avatar-section">
                 <div class="profile-avatar-wrap">
-                    <img src="{{ $user->avatar_url }}"
+                    <img src="{{ $user?->avatar_url ?? asset('images/default-avatar.png') }}">
                          class="profile-avatar"
                          alt="Foto profil"
                          id="profile-avatar-img">
                     <label class="profile-avatar-edit"
                            for="avatar-trigger"
                            title="Ganti foto">✏</label>
-                    {{-- Trigger preview — bukan bagian form --}}
+                    {{-- Trigger preview — BUKAN bagian form --}}
                     <input type="file" id="avatar-trigger"
                            accept="image/*" style="display:none"
                            onchange="previewAvatar(this)">
@@ -55,14 +77,14 @@
                 </div>
             </div>
 
-            {{-- Form Informasi Pribadi --}}
+            {{-- ── Form Informasi Pribadi ───────────────────────────────── --}}
             <form class="profile-form"
                   method="POST"
-                  action="{{ route('user.profile.update-info') }}"
+                  action="{{ route('pages.users.profil.update-info') }}"
                   enctype="multipart/form-data">
                 @csrf
 
-                {{-- Input file avatar di dalam form (disync via JS) --}}
+                {{-- File avatar di dalam form (disync dari avatar-trigger via JS) --}}
                 <input type="file" name="avatar" id="avatar-file-input"
                        accept="image/*" style="display:none">
 
@@ -71,12 +93,13 @@
                 {{-- Error box khusus form info --}}
                 @if($errors->hasAny(['first_name','last_name','phone','city','province','bio','avatar']))
                     <div class="profile-error-box">
-                        @foreach(['first_name','last_name','phone','city','province','bio','avatar'] as $field)
-                            @error($field)<p>⚠ {{ $message }}</p>@enderror
+                        @foreach(['first_name','last_name','phone','city','province','bio','avatar'] as $f)
+                            @error($f)<p>⚠ {{ $message }}</p>@enderror
                         @endforeach
                     </div>
                 @endif
 
+                {{-- Nama --}}
                 <div class="profile-form-row">
                     <div class="profile-form-group">
                         <label class="profile-form-label" for="first_name">Nama Depan</label>
@@ -97,6 +120,7 @@
                     </div>
                 </div>
 
+                {{-- Email (read-only) --}}
                 <div class="profile-form-group">
                     <label class="profile-form-label" for="email">Alamat Email</label>
                     <input type="email" id="email"
@@ -108,6 +132,7 @@
                     </p>
                 </div>
 
+                {{-- Telepon --}}
                 <div class="profile-form-group">
                     <label class="profile-form-label" for="phone">Nomor Telepon</label>
                     <input type="tel" id="phone" name="phone"
@@ -116,6 +141,7 @@
                            value="{{ old('phone', $user->phone) }}">
                 </div>
 
+                {{-- Kota & Provinsi --}}
                 <div class="profile-form-row">
                     <div class="profile-form-group">
                         <label class="profile-form-label" for="city">Kota</label>
@@ -155,6 +181,7 @@
                     </div>
                 </div>
 
+                {{-- Bio --}}
                 <div class="profile-form-group">
                     <label class="profile-form-label" for="bio">Bio Singkat</label>
                     <textarea id="bio" name="bio"
@@ -188,16 +215,15 @@
             <div class="user-card__body">
                 <form class="profile-form"
                       method="POST"
-                      action="{{ route('user.profile.update-password') }}">
+                      action="{{ route('pages.users.profil.update-password') }}">
                     @csrf
 
                     <p class="profile-section-divider">Ubah Kata Sandi</p>
 
-                    {{-- Error box khusus form password --}}
                     @if($errors->hasAny(['pass_current','pass_new','pass_confirm']))
                         <div class="profile-error-box">
-                            @foreach(['pass_current','pass_new','pass_confirm'] as $field)
-                                @error($field)<p>⚠ {{ $message }}</p>@enderror
+                            @foreach(['pass_current','pass_new','pass_confirm'] as $f)
+                                @error($f)<p>⚠ {{ $message }}</p>@enderror
                             @endforeach
                         </div>
                     @endif
@@ -246,7 +272,7 @@
                 <p class="user-card__title">🔔 Notifikasi</p>
             </div>
             <div class="user-card__body">
-                <form method="POST" action="{{ route('user.profile.update-notif') }}">
+                <form method="POST" action="{{ route('pages.users.profil.update-notif') }}">
                     @csrf
                     <div style="display:flex;flex-direction:column;gap:.85rem">
                         @php
@@ -258,13 +284,18 @@
                         ];
                         @endphp
                         @foreach($notifItems as $n)
-                            <label style="display:flex;align-items:center;justify-content:space-between;
-                                          cursor:pointer;font-size:.85rem;color:var(--clr-text-muted)">
+                            <label style="display:flex;align-items:center;
+                                          justify-content:space-between;
+                                          cursor:pointer;font-size:.85rem;
+                                          color:var(--clr-text-muted)">
                                 <span>{{ $n['label'] }}</span>
                                 <input type="checkbox"
                                        name="{{ $n['key'] }}"
+                                       value="1"
                                        {{ $user->{$n['key']} ? 'checked' : '' }}
-                                       style="width:18px;height:18px;accent-color:var(--clr-green);cursor:pointer">
+                                       style="width:18px;height:18px;
+                                              accent-color:var(--clr-green);
+                                              cursor:pointer">
                             </label>
                         @endforeach
                     </div>
@@ -289,45 +320,52 @@
                         <p>Hapus Akun</p>
                         <p>Akun dan semua data akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</p>
                     </div>
+
+                    {{-- ⚠ PERBAIKAN: tambahkan @method('DELETE') --}}
                     <form method="POST"
-                          action="{{ route('user.profile.delete-account') }}"
+                          action="{{ route('pages.users.profil.delete-account') }}"
                           onsubmit="return confirm('Yakin ingin menghapus akun?\nTindakan ini TIDAK BISA dibatalkan.')">
                         @csrf
+                        @method('DELETE')
                         <button type="submit" class="btn-danger">Hapus Akun</button>
                     </form>
                 </div>
             </div>
         </div>
 
-    </div>
-</div>
+    </div>{{-- end kolom kanan --}}
+
+</div>{{-- end user-grid-2 --}}
 
 @endsection
 
 @push('scripts')
 <script>
-// ── Preview avatar sebelum diupload ──────────────────────────────────────────
+// ── Preview avatar sebelum upload ─────────────────────────────────────────────
 function previewAvatar(triggerInput) {
     if (!triggerInput.files || !triggerInput.files[0]) return;
 
     const file = triggerInput.files[0];
 
+    // Tampilkan preview langsung
     const reader = new FileReader();
     reader.onload = e => {
         document.getElementById('profile-avatar-img').src = e.target.result;
     };
     reader.readAsDataURL(file);
 
+    // Salin file ke input yang ada di dalam <form> agar ikut ter-submit
     const dt = new DataTransfer();
     dt.items.add(file);
     document.getElementById('avatar-file-input').files = dt.files;
 }
 
+// ── Toggle show/hide password ─────────────────────────────────────────────────
 function togglePass(fieldId, btn) {
-    const inp   = document.getElementById(fieldId);
-    const isHidden = inp.type === 'password';
-    inp.type       = isHidden ? 'text' : 'password';
-    btn.textContent = isHidden ? '🙈' : '👁';
+    const inp    = document.getElementById(fieldId);
+    const hidden = inp.type === 'password';
+    inp.type     = hidden ? 'text' : 'password';
+    btn.textContent = hidden ? '🙈' : '👁';
 }
 </script>
 @endpush

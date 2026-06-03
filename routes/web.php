@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KoleksiController;
 use App\Http\Controllers\DetailController;
 use App\Http\Controllers\AdminProdukController;
+use App\Http\Controllers\User\ProfilController;
 use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
@@ -93,12 +94,48 @@ Route::view('/payment', 'pages.payment')->name('payment');
 
 Route::view('/succespayment', 'pages.successpayment')->name('successpayment');
 
-Route::get( '/profil',                  [ProfilController::class, 'index'])               ->name('profil');
+Route::middleware(['auth'])->prefix('profil')->group(function () {
 
-Route::post('/profil/update-info',      [ProfilController::class, 'updateInfo'])          ->name('profil.update-info');
+    Route::get('/', [ProfilController::class, 'index'])
+        ->name('pages.users.profil');
 
-Route::post('/profil/update-password',  [ProfilController::class, 'updatePassword'])      ->name('profil.update-password');
+    Route::post('/update-info', [ProfilController::class, 'updateInfo'])
+        ->name('pages.user.profil.update-info');
 
-Route::post('/profil/update-notif',     [ProfilController::class, 'updateNotifications']) ->name('profil.update-notif');
+    Route::post('/update-password', [ProfilController::class, 'updatePassword'])
+        ->name('pages.users.profil.update-password');
 
-Route::post('/profil/delete-account',   [ProfilController::class, 'deleteAccount'])       ->name('profil.delete-account');
+    Route::post('/update-notif', [ProfilController::class, 'updateNotifications'])
+        ->name('pages.users.profil.update-notif');
+
+    Route::delete('/delete-account', [ProfilController::class, 'deleteAccount'])
+        ->name('pages.users.profil.delete-account');
+});
+
+Route::middleware(['auth', 'verified', 'role:user'])
+    ->prefix('dashboard')
+    ->name('user.')
+    ->group(function () {
+
+    // Beranda dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Lisensi
+    Route::prefix('lisensi')->name('licenses.')->group(function () {
+            Route::get('/',       [LicenseController::class, 'index'])->name('index');
+            Route::get('/{id}',   [LicenseController::class, 'show'])->name('show');
+    });
+
+    // Sertifikat
+    Route::prefix('sertifikat')->name('certificates.')->group(function () {
+            Route::get('/',           [CertificateController::class, 'index'])->name('index');
+            Route::get('/{id}',       [CertificateController::class, 'show'])->name('show');
+            Route::get('/{id}/unduh', [CertificateController::class, 'download'])->name('download');
+    });
+
+    // Transaksi / riwayat pembelian
+    Route::prefix('transaksi')->name('transactions.')->group(function () {
+            Route::get('/',     [TransactionController::class, 'index'])->name('index');
+            Route::get('/{id}', [TransactionController::class, 'show'])->name('show');
+    });
+});

@@ -1,6 +1,5 @@
 <?php
 // app/Http/Controllers/User/ProfileController.php
-// Fungsi: Menampilkan & mengupdate data profil, sandi, notifikasi, dan hapus akun
 
 namespace App\Http\Controllers\User;
 
@@ -11,17 +10,27 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
-class ProfileController extends Controller
+class ProfilController extends Controller
 {
-    // ── 1. Tampilkan halaman profil ───────────────────────────────────────
+    // =========================================================================
+    // 1. Tampilkan halaman profil
+    // =========================================================================
     public function index()
     {
-        return view('user.profile', [
-            'user' => Auth::user(),
-        ]);
+       
+    if (!Auth::check()) {
+        return redirect()->route('login');
     }
 
-    // ── 2. Simpan perubahan data pribadi + avatar ─────────────────────────
+{
+        return view('pages.users.profil', [
+            'user' => Auth::user(),
+        ]);
+    }}
+
+    // =========================================================================
+    // 2. Update data pribadi + avatar
+    // =========================================================================
     public function updateInfo(Request $request)
     {
         $user = Auth::user();
@@ -29,7 +38,7 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:80'],
             'last_name'  => ['nullable', 'string', 'max:80'],
-            'phone'      => ['nullable', 'string', 'max:20'],
+            'phone'      => ['nullable', 'string', 'max:25'],
             'city'       => ['nullable', 'string', 'max:100'],
             'province'   => ['nullable', 'string', 'max:100'],
             'bio'        => ['nullable', 'string', 'max:500'],
@@ -37,23 +46,29 @@ class ProfileController extends Controller
         ], [
             'first_name.required' => 'Nama depan wajib diisi.',
             'first_name.max'      => 'Nama depan maksimal 80 karakter.',
-            'avatar.image'        => 'File harus berupa gambar.',
-            'avatar.mimes'        => 'Format gambar harus jpg, jpeg, png, atau webp.',
-            'avatar.max'          => 'Ukuran gambar maksimal 2MB.',
             'bio.max'             => 'Bio maksimal 500 karakter.',
+            'avatar.image'        => 'File harus berupa gambar.',
+            'avatar.mimes'        => 'Format: jpg, jpeg, png, atau webp.',
+            'avatar.max'          => 'Ukuran gambar maksimal 2 MB.',
         ]);
 
-        // Upload avatar baru jika ada
-        if ($request->hasFile('avatar')) {
-            // Hapus avatar lama dari storage
-            if ($user->avatar) {
+        // ── Upload avatar baru ────────────────────────────────────────────
+        if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
+
+            // Hapus avatar lama dari disk agar tidak menumpuk
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
+
+            // Simpan di storage/app/public/avatars/
             $validated['avatar'] = $request->file('avatar')
                                            ->store('avatars', 'public');
+        } else {
+            // Tidak ada file baru → jangan timpa kolom avatar dengan null
+            unset($validated['avatar']);
         }
 
-        // Sync kolom 'name' agar konsisten
+        // Sync kolom `name` = first_name + last_name
         $validated['name'] = trim(
             $validated['first_name'] . ' ' . ($validated['last_name'] ?? '')
         );
@@ -63,7 +78,9 @@ class ProfileController extends Controller
         return back()->with('success', 'Profil berhasil disimpan.');
     }
 
-    // ── 3. Ubah kata sandi ────────────────────────────────────────────────
+    // =========================================================================
+    // 3. Ubah kata sandi
+    // =========================================================================
     public function updatePassword(Request $request)
     {
         $user = Auth::user();
@@ -71,7 +88,7 @@ class ProfileController extends Controller
         $request->validate([
             'pass_current' => [
                 'required',
-                function ($attribute, $value, $fail) use ($user) {
+                function ($attr, $value, $fail) use ($user) {
                     if (! Hash::check($value, $user->password)) {
                         $fail('Sandi saat ini tidak sesuai.');
                     }
@@ -92,16 +109,17 @@ class ProfileController extends Controller
             'pass_confirm.same'     => 'Konfirmasi sandi tidak cocok.',
         ]);
 
-        $user->update([
-            'password' => Hash::make($request->pass_new),
-        ]);
+        $user->update(['password' => Hash::make($request->pass_new)]);
 
         return back()->with('success_password', 'Kata sandi berhasil diubah.');
     }
 
-    // ── 4. Simpan preferensi notifikasi ──────────────────────────────────
+    // =========================================================================
+    // 4. Simpan preferensi notifikasi
+    // =========================================================================
     public function updateNotifications(Request $request)
     {
+        // Checkbox tidak terkirim jika tidak dicentang → boolean() = false
         Auth::user()->update([
             'notif_license' => $request->boolean('notif_license'),
             'notif_cert'    => $request->boolean('notif_cert'),
@@ -112,25 +130,26 @@ class ProfileController extends Controller
         return back()->with('success_notif', 'Preferensi notifikasi disimpan.');
     }
 
-    // ── 5. Hapus akun permanen ────────────────────────────────────────────
+    // =========================================================================
+    // 5. Hapus akun permanen
+    // =========================================================================
     public function deleteAccount(Request $request)
     {
         $user = Auth::user();
 
-        // Hapus avatar dari storage jika ada
-        if ($user->avatar) {
+        // Hapus avatar dari storage
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
             Storage::disk('public')->delete($user->avatar);
         }
 
-        // Logout dulu sebelum hapus
+        // Logout & invalidasi session SEBELUM delete record
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Hapus user dari database
         $user->delete();
 
         return redirect('/')
-               ->with('info', 'Akun kamu telah dihapus. Terima kasih telah menggunakan BatikAI.');
+            ->with('info', 'Akun kamu telah dihapus. Terima kasih telah menggunakan BatikAI.');
     }
 }
