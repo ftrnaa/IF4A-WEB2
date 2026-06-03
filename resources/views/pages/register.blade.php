@@ -20,17 +20,18 @@
 
     {{-- Social Register --}}
     <div class="auth-social" style="margin-bottom:1.5rem">
-        <button class="btn-social" type="button">
-            <span class="btn-social__icon">G</span>
-            Daftar dengan Google
-        </button>
+        <a href="{{ route('google.login') }}" class="btn-social">
+    <span class="btn-social__icon">G</span>
+    Daftar dengan Google
+</a>
     </div>
 
     {{-- Divider --}}
     <div class="auth-divider">atau daftar dengan email</div>
 
     {{-- Form --}}
-    <form class="auth-form" onsubmit="register(event)">
+    <form action="{{ route('register.process') }}"
+      method="POST">
         @csrf
 
         {{-- Name Row --}}

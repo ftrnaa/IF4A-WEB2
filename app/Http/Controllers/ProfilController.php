@@ -1,7 +1,7 @@
 <?php
 // app/Http/Controllers/User/ProfileController.php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -17,16 +17,10 @@ class ProfilController extends Controller
     // =========================================================================
     public function index()
     {
-       
-    if (!Auth::check()) {
-        return redirect()->route('login');
-    }
-
-{
         return view('pages.users.profil', [
-            'user' => Auth::user(),
-        ]);
-    }}
+    'user' => Auth::user(),
+]);
+    }
 
     // =========================================================================
     // 2. Update data pribadi + avatar
@@ -152,4 +146,5 @@ class ProfilController extends Controller
         return redirect('/')
             ->with('info', 'Akun kamu telah dihapus. Terima kasih telah menggunakan BatikAI.');
     }
+    
 }

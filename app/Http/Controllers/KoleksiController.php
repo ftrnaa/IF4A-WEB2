@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Helpers\BatikHelper;
 
 class KoleksiController extends Controller
 {
@@ -31,77 +32,79 @@ class KoleksiController extends Controller
 
     public function index(Request $request)
     {
-        // CACHE 
-        $all = Cache::rememberForever('all_batiks', function () {
+        $raw = Cache::remember('batik_products', 3600, function () {
 
-            $response = Http::timeout(120)
+            $response = Http::timeout(60)
                 ->get('https://btx.agunghakase.my.id/api/batik/getall');
 
-            $json = $response->json();
-
-            return $json['batiks'] ?? [];
+            return $response->json()['batiks'] ?? [];
         });
 
-        // AUTO DETECT KATEGORI DARI STYLE
-$all = collect($all)->map(function ($item) {
+        // helper transform (SAMA DENGAN ADMIN)
+        // helper transform + nama otomatis dari keyword
+$all = collect($raw)
+    ->map(function ($item) {
 
-    $style = strtolower(
-        trim($item['style'] ?? '')
-    );
+        $formatted = BatikHelper::format($item);
 
-    $words = explode(' ', $style);
+        $keyword = strtolower(trim($item['keyword'] ?? ''));
 
-    // hapus kata "batik" jika ada di depan
-    if (($words[0] ?? '') === 'batik') {
-        array_shift($words);
-    }
+        // pecah keyword jadi array kata
+        $words = explode(' ', $keyword);
 
-    // ambil 2 kata pertama
-    $kategori = array_slice($words, 0, 2);
+        // cari posisi kata "batik"
+        $batikIndex = array_search('batik', $words);
 
-    $item['kategori'] = implode(' ', $kategori);
+        if ($batikIndex !== false) {
 
-    return $item;
+            // ambil 3 kata setelah "batik"
+            $nameWords = array_slice($words, $batikIndex + 1, 3);
 
-})->toArray();
-        // SEMUA KATEGORI UNIK
+            $formatted['name'] = ucwords(implode(' ', $nameWords));
+        }
+
+        return $formatted;
+    })
+    ->toArray();
+
+        // =========================
+        // FILTER KATEGORI
+        // =========================
+        $selectedCategory = strtolower(trim($request->kategori ?? ''));
+        $keyword = strtolower(trim($request->search ?? ''));
+
+        if ($selectedCategory && $selectedCategory !== 'semua') {
+            $all = collect($all)
+                ->filter(fn($item) =>
+                    strtolower($item['kategori'] ?? '') === $selectedCategory
+                )
+                ->values()
+                ->toArray();
+        }
+
+        if ($keyword) {
+            $all = collect($all)
+                ->filter(function ($item) use ($keyword) {
+
+                    $text =
+                        strtolower($item['name'] ?? '') . ' ' .
+                        strtolower($item['kategori'] ?? '') . ' ' .
+                        strtolower($item['description'] ?? '');
+
+                    return str_contains($text, $keyword);
+                })
+                ->values()
+                ->toArray();
+        }
+
         $categories = collect($all)
             ->pluck('kategori')
             ->unique()
             ->sort()
             ->values();
-        // FILTER KATEGORI
-        $selectedCategory = strtolower(trim($request->kategori ?? ''));
-        // SEARCH LOCAL
-        $keyword = strtolower(trim($request->search ?? ''));
-        // FILTER BERDASARKAN KATEGORI
-if ($selectedCategory && $selectedCategory !== 'semua') {
-
-    $all = collect($all)->filter(function ($item) use ($selectedCategory) {
-
-        return strtolower($item['kategori'] ?? '') === $selectedCategory;
-
-    })->values()->toArray();
-}
-        if ($keyword) {
-
-            $all = collect($all)->filter(function ($item) use ($keyword) {
-
-                $text =
-                    strtolower($item['keyword'] ?? '') . ' ' .
-                    strtolower($item['kategori'] ?? '') . ' ' .
-                    strtolower($item['deskripsi'] ?? '');
-
-                return str_contains($text, $keyword);
-
-            })->values()->toArray();
-        }
 
         $motifs = $this->paginate($all, $request);
 
-        return view(
-            'pages.koleksi',
-            compact('motifs', 'categories')
-        );
+        return view('pages.koleksi', compact('motifs', 'categories'));
     }
 }

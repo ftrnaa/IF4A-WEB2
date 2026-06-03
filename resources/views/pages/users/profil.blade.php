@@ -56,10 +56,9 @@ $user = $user ?? auth()->user();
             {{-- ── Avatar preview ──────────────────────────────────────── --}}
             <div class="profile-avatar-section">
                 <div class="profile-avatar-wrap">
-                    <img src="{{ $user?->avatar_url ?? asset('images/default-avatar.png') }}">
-                         class="profile-avatar"
-                         alt="Foto profil"
-                         id="profile-avatar-img">
+                    <img src="{{ optional($user)->avatar
+    ? asset('storage/' . $user->avatar)
+    : asset('images/default-avatar.png') }}" alt="Avatar">
                     <label class="profile-avatar-edit"
                            for="avatar-trigger"
                            title="Ganti foto">✏</label>
@@ -320,15 +319,16 @@ $user = $user ?? auth()->user();
                         <p>Hapus Akun</p>
                         <p>Akun dan semua data akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</p>
                     </div>
+                   <form method="POST"
+      action="{{ route('user.profile.delete-account') }}"
+      onsubmit="return confirm('Yakin ingin menghapus akun?\nTindakan ini TIDAK BISA dibatalkan.')">
+    @csrf
+    @method('DELETE')
 
-                    {{-- ⚠ PERBAIKAN: tambahkan @method('DELETE') --}}
-                    <form method="POST"
-                          action="{{ route('pages.users.profil.delete-account') }}"
-                          onsubmit="return confirm('Yakin ingin menghapus akun?\nTindakan ini TIDAK BISA dibatalkan.')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-danger">Hapus Akun</button>
-                    </form>
+    <button type="submit" class="btn-danger">
+        Hapus Akun
+    </button>
+</form>
                 </div>
             </div>
         </div>
