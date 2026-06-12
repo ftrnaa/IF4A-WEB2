@@ -1067,3 +1067,17 @@
   gap: .4rem;
   width: 100%;
 }
+.batik-slider{
+    width:80px;
+    height:80px;
+    border-radius:10px;
+    overflow:hidden;
+    flex-shrink:0;
+}
+
+.batik-slider-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:opacity .6s ease;
+}

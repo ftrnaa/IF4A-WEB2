@@ -4,226 +4,599 @@
 
 @section('content')
 
-@php
-$today = \Carbon\Carbon::today();
-$licenses = [
-    ['name'=>'Sido Mukti',  'cat'=>'Klasik',  'date'=>'2026-04-13','amount'=>120000,'img'=>'batik1','method'=>'Transfer Bank', 'product_link'=>''],
-    ['name'=>'Mega Mendung','cat'=>'Pesisir', 'date'=>'2025-12-10','amount'=>135000,'img'=>'batik3','method'=>'GoPay',          'product_link'=>'https://tokopedia.com/toko-batikku/mega-mendung-premium'],
-    ['name'=>'Parang Rusak','cat'=>'Pesisir', 'date'=>'2025-04-05','amount'=>95000, 'img'=>'batik5','method'=>'Transfer Bank', 'product_link'=>''],
-];
-@endphp
-
 <div class="admin-page-header">
     <h1>Produk Saya</h1>
     <p>Kelola semua lisensi motif batik yang sudah kamu beli.</p>
 </div>
 
 {{-- Stats --}}
-<div class="user-stats-grid" style="margin-bottom:1.4rem">
+<div class="user-stats-grid" style="margin-bottom:1.5rem">
     <div class="user-stat-card">
         <div>
             <p class="user-stat-card__label">Total Lisensi</p>
-            <p class="user-stat-card__value">3</p>
+            <p class="user-stat-card__value">{{ $orders->count() }}</p>
         </div>
         <div class="user-stat-card__icon usc-gold">🛡</div>
     </div>
     <div class="user-stat-card">
         <div>
             <p class="user-stat-card__label">Aktif</p>
-            <p class="user-stat-card__value">2</p>
+            <p class="user-stat-card__value">{{ $aktif }}</p>
         </div>
         <div class="user-stat-card__icon usc-green">✅</div>
     </div>
     <div class="user-stat-card">
         <div>
             <p class="user-stat-card__label">Hampir Habis</p>
-            <p class="user-stat-card__value">1</p>
+            <p class="user-stat-card__value">{{ $hampirHabis }}</p>
         </div>
         <div class="user-stat-card__icon usc-blue">⚠️</div>
     </div>
     <div class="user-stat-card">
         <div>
             <p class="user-stat-card__label">Kedaluwarsa</p>
-            <p class="user-stat-card__value">1</p>
+            <p class="user-stat-card__value">{{ $kedaluwarsa }}</p>
         </div>
         <div class="user-stat-card__icon usc-brown">⏰</div>
     </div>
 </div>
 
-<div style="display:flex;flex-direction:column;gap:1.2rem">
-    @foreach($licenses as $idx => $lic)
+{{-- License Cards --}}
+<div style="display:flex;flex-direction:column;gap:1rem">
+
+    @foreach($orders as $idx => $order)
+
     @php
-        $buyDate    = \Carbon\Carbon::parse($lic['date']);
-        $expiryDate = $buyDate->copy()->addYear();
-        $daysLeft   = $today->diffInDays($expiryDate, false);
-        $total      = 365;
-        $elapsed    = $total - max(0, $daysLeft);
-        $pct        = max(0, min(100, round(($elapsed / $total) * 100)));
+        $buyDate     = \Carbon\Carbon::parse($order->created_at);
+        $expiryDate  = $buyDate->copy()->addYear();
+        $today       = now();
+        $daysLeft    = (int) round($today->diffInDays($expiryDate, false));
+        $total       = 365;
+        $elapsed     = $total - max(0, $daysLeft);
+        $pct         = max(0, min(100, ($elapsed / $total) * 100));
+        $remainingPct = max(0, floor(($daysLeft / 365) * 100));
 
-        if ($daysLeft < 0)       { $status = 'expired';  $statusLabel = 'Kedaluwarsa'; $statusClass = 'status-badge--failed'; }
-        elseif ($daysLeft <= 30) { $status = 'expiring'; $statusLabel = 'Hampir Habis'; $statusClass = 'status-badge--pending'; }
-        else                     { $status = 'active';   $statusLabel = 'Aktif'; $statusClass = 'status-badge--paid'; }
+        if ($daysLeft < 0) {
+            $status      = 'expired';
+            $statusLabel = 'Kedaluwarsa';
+            $pillClass   = 'lic-pill--expired';
+            $badgeClass  = 'lic-img-badge--expired';
+            $progressClass = 'lic-progress__fill--expired';
+        } elseif ($daysLeft <= 30) {
+            $status      = 'expiring';
+            $statusLabel = 'Hampir Habis';
+            $pillClass   = 'lic-pill--warn';
+            $badgeClass  = 'lic-img-badge--warn';
+            $progressClass = 'lic-progress__fill--warn';
+        } else {
+            $status      = 'active';
+            $statusLabel = 'Aktif';
+            $pillClass   = 'lic-pill--active';
+            $badgeClass  = 'lic-img-badge--active';
+            $progressClass = '';
+        }
 
-        $progressClass = $status === 'expiring' ? 'license-progress__fill--warn'
-                       : ($status === 'expired' ? 'license-progress__fill--expired' : '');
-
-        $hasLink = !empty($lic['product_link']);
+        $images = [];
+        if ($order->batik->preview_image) {
+            $images[] = $order->batik->preview_image;
+        }
+        $costumeImages = $order->batik->costume_images ?? [];
+        if (is_array($costumeImages)) {
+            $images = array_merge($images, $costumeImages);
+        }
     @endphp
 
-    <div class="user-card license-main-card" id="license-card-{{ $idx }}">
-        <div class="user-card__body" style="padding:1.4rem 1.6rem">
-            <div style="display:flex;gap:1.2rem;align-items:flex-start;flex-wrap:wrap">
+    <div class="lic-card {{ $status === 'expired' ? 'lic-card--expired' : '' }}" id="license-card-{{ $idx }}">
+        <div class="lic-card__inner">
 
-                {{-- Motif Image --}}
-                <img src="{{ asset('images/' . $lic['img'] . '.jpg') }}"
-                     alt="{{ $lic['name'] }}"
-                     style="width:80px;height:80px;border-radius:10px;object-fit:cover;flex-shrink:0">
+            {{-- ── Kolom Gambar ─────────────────────────────── --}}
+            <div class="lic-img-col">
+                <div class="batik-slider lic-slider" data-images='@json($images)'>
+                    <img
+                        class="batik-slider-img lic-slider__img"
+                        src="https://btx.agunghakase.my.id/api/image/{{ $images[0] ?? 'placeholder' }}"
+                        alt="{{ $order->batik->nama }}">
+                </div>
+                <span class="lic-img-badge {{ $badgeClass }}">{{ $statusLabel }}</span>
+            </div>
 
-                {{-- Info --}}
-                <div style="flex:1;min-width:200px">
-                    <p style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--clr-gold);font-weight:600;margin-bottom:.2rem">{{ $lic['cat'] }}</p>
-                    <p style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--clr-brown-dark);margin-bottom:.6rem">{{ $lic['name'] }}</p>
+            {{-- ── Kolom Info ────────────────────────────────── --}}
+            <div class="lic-body">
 
-                    <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:.9rem">
-                        <div>
-                            <p style="font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--clr-text-muted)">Tgl Beli</p>
-                            <p style="font-size:.84rem;font-weight:600;color:var(--clr-brown-dark)">{{ $buyDate->format('d M Y') }}</p>
-                        </div>
-                        <div>
-                            <p style="font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--clr-text-muted)">Tgl Berakhir</p>
-                            <p style="font-size:.84rem;font-weight:600;color:{{ $status === 'expired' ? '#C0392B' : ($status === 'expiring' ? '#B8610A' : 'var(--clr-brown-dark)') }}">
-                                {{ $expiryDate->format('d M Y') }}
-                            </p>
-                        </div>
-                        <div>
-                            <p style="font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--clr-text-muted)">Harga Beli</p>
-                            <p style="font-size:.84rem;font-weight:600;color:var(--clr-green)">Rp {{ number_format($lic['amount'],0,',','.') }}</p>
-                        </div>
-                        <div>
-                            <p style="font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--clr-text-muted)">Metode Bayar</p>
-                            <p style="font-size:.84rem;font-weight:500;color:var(--clr-text-muted)">{{ $lic['method'] }}</p>
-                        </div>
-                    </div>
-
-                    {{-- Progress bar --}}
-                    <div style="display:flex;align-items:center;gap:.75rem">
-                        <div style="flex:1;height:6px;background:var(--clr-cream-dark);border-radius:3px;overflow:hidden;max-width:240px">
-                            <div class="license-progress__fill {{ $progressClass }}"
-                                 style="width:{{ $pct }}%;height:100%;border-radius:3px"></div>
-                        </div>
-                        <span style="font-size:.72rem;color:var(--clr-text-muted);white-space:nowrap">
-                            @if($status === 'expired')
-                                Berakhir {{ abs($daysLeft) }} hari lalu
-                            @else
-                                {{ $daysLeft }} hari lagi ({{ 100 - $pct }}% tersisa)
-                            @endif
-                        </span>
-                    </div>
-
-                    {{-- Product Link Section --}}
-                    <div class="product-link-section" style="margin-top:1rem;padding-top:1rem;border-top:1px dashed rgba(200,169,110,.25)">
-                        <p style="font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--clr-text-muted);margin-bottom:.5rem;font-weight:600">
-                            🔗 Link Produk Saya
-                        </p>
-
-                        {{-- Input form --}}
-                        <div class="product-link-input-wrap" id="link-input-wrap-{{ $idx }}" style="{{ $hasLink ? 'display:none' : '' }}">
-                            <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-                                <input type="url"
-                                       class="product-link-input"
-                                       id="link-input-{{ $idx }}"
-                                       placeholder="https://tokopedia.com/toko-saya/produk-batik..."
-                                       value="{{ $lic['product_link'] }}"
-                                       style="flex:1;min-width:200px">
-                                <button class="cert-btn cert-btn--dl"
-                                        onclick="saveProductLink({{ $idx }}, '{{ $lic['name'] }}')"
-                                        style="white-space:nowrap;padding:.38rem .85rem">
-                                    💾 Simpan Link
-                                </button>
-                            </div>
-                            <p style="font-size:.68rem;color:var(--clr-text-muted);margin-top:.35rem;opacity:.7">
-                                Tempel link toko atau halaman produk yang menggunakan motif ini.
-                            </p>
-                        </div>
-
-                        {{-- Preview card (shown when link exists) --}}
-                        <div class="product-link-preview" id="link-preview-{{ $idx }}" style="{{ !$hasLink ? 'display:none' : '' }}">
-                            <div class="product-preview-card" id="preview-card-{{ $idx }}"
-                                 data-url="{{ $lic['product_link'] }}">
-                                <div class="ppc__loading" id="ppc-loading-{{ $idx }}">
-                                    <span class="ppc__spinner"></span>
-                                    <span style="font-size:.75rem;color:var(--clr-text-muted)">Memuat detail produk…</span>
-                                </div>
-                                <div class="ppc__content" id="ppc-content-{{ $idx }}" style="display:none">
-                                    <div class="ppc__favicon-wrap">
-                                        <img class="ppc__favicon" id="ppc-favicon-{{ $idx }}" src="" alt="">
-                                        <span class="ppc__domain" id="ppc-domain-{{ $idx }}"></span>
-                                    </div>
-                                    <p class="ppc__title" id="ppc-title-{{ $idx }}"></p>
-                                    <p class="ppc__url" id="ppc-url-{{ $idx }}"></p>
-                                    <div class="ppc__actions">
-                                        <a class="cert-btn cert-btn--dl ppc__open-btn" id="ppc-open-{{ $idx }}" href="#" target="_blank" rel="noopener">
-                                            ↗ Buka Produk
-                                        </a>
-                                        <button class="cert-btn cert-btn--view"
-                                                onclick="editProductLink({{ $idx }})">
-                                            ✏ Ganti Link
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {{-- end product link --}}
-
+                {{-- Judul --}}
+                <div>
+                    <p class="lic-category">{{ $order->batik->kategory }}</p>
+                    <p class="lic-name">{{ $order->batik->nama }}</p>
                 </div>
 
-                {{-- Status + Actions --}}
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.7rem;flex-shrink:0">
-                    <span class="status-badge {{ $statusClass }}">{{ $statusLabel }}</span>
-
-                    <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
-                        <a href="#" class="cert-btn cert-btn--dl" onclick="userToast('✓ File lisensi diunduh')">
-                            ⬇ Unduh Produk (PDF)
-                        </a>
-                          <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
-                        <a href="#" class="cert-btn cert-btn--dl" onclick="userToast('✓ File lisensi diunduh')">
-                            ⬇ UnduhSertifikat (PDF)
-                        </a>
-                        <button class="cert-btn cert-btn--view"
-                                onclick="viewCert('Lisensi Komersial — {{ $lic['name'] }}','{{ $buyDate->format('d M Y') }}')">
-                            👁 Lihat Detail
-                        </button>
-                        @if($status === 'expired')
-                        <a href="/koleksi" class="cert-btn" style="color:var(--clr-green);border-color:rgba(44,74,62,.2)">
-                            🔄 Perpanjang
-                        </a>
-                        @endif
+                {{-- Meta --}}
+                <div class="lic-meta">
+                    <div class="lic-meta__group">
+                        <p class="lic-meta__label">Tgl Beli</p>
+                        <p class="lic-meta__value">{{ $buyDate->format('d M Y') }}</p>
                     </div>
+                    <div class="lic-meta__group">
+                        <p class="lic-meta__label">Tgl Berakhir</p>
+                        <p class="lic-meta__value {{ $status === 'expired' ? 'lic-meta__value--expired' : ($status === 'expiring' ? 'lic-meta__value--warn' : '') }}">
+                            {{ $expiryDate->format('d M Y') }}
+                        </p>
+                    </div>
+                    <div class="lic-meta__group">
+                        <p class="lic-meta__label">Harga Beli</p>
+                        <p class="lic-meta__value lic-meta__value--price">Rp {{ number_format($order->total, 0, ',', '.') }}</p>
+                    </div>
+                    <div class="lic-meta__group">
+                        <p class="lic-meta__label">Metode Bayar</p>
+                        <p class="lic-meta__value lic-meta__value--muted">{{ $order->payment_type ?? '-' }}</p>
+                    </div>
+                </div>
+
+                {{-- Progress Bar --}}
+                <div class="lic-progress-row">
+                    <div class="lic-progress-track">
+                        <div class="lic-progress__fill {{ $progressClass }}" style="width:{{ $pct }}%"></div>
+                    </div>
+                    <span class="lic-progress-text">
+                        @if($status === 'expired')
+                            Berakhir {{ abs($daysLeft) }} hari lalu
+                        @else
+                            {{ $daysLeft }} hari lagi ({{ $remainingPct }}% tersisa)
+                        @endif
+                    </span>
+                </div>
+
+                {{-- Product Link Section --}}
+                <div class="lic-link-section">
+                    <p class="lic-link-section__label">🔗 Link Produk Saya</p>
+
+                    {{-- Saved links --}}
+                    @if($order->productLinks->count() > 0)
+                    <div class="lic-saved-links">
+                        @foreach($order->productLinks as $link)
+                        <div class="lic-saved-link">
+                            <div class="lic-saved-link__info">
+                                <strong>{{ $link->title }}</strong>
+                                <span>{{ Str::limit($link->url, 60) }}</span>
+                            </div>
+                            <div class="lic-saved-link__actions">
+                                <a href="{{ $link->url }}" target="_blank" class="cert-btn cert-btn--view">↗ Buka</a>
+                                <button
+                                    class="cert-btn cert-btn--danger"
+                                    onclick="deleteProductLink({{ $link->id }})">🗑</button>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    {{-- Tombol tambah --}}
+                    <button
+                        type="button"
+                        class="cert-btn cert-btn--add"
+                        onclick="showAddLink({{ $idx }})">
+                        ➕ Tambah Link
+                    </button>
+
+                    {{-- Form input link (tersembunyi) --}}
+                    <div class="lic-link-input-wrap" id="link-input-wrap-{{ $idx }}" style="display:none">
+                        <input
+                            type="url"
+                            class="lic-link-input"
+                            id="link-input-{{ $idx }}"
+                            placeholder="https://tokopedia.com/toko-saya/produk-batik...">
+                        <button
+                            class="cert-btn cert-btn--dl"
+                            onclick="saveProductLink({{ $idx }}, {{ $order->id }}, '{{ $order->batik->nama }}')">
+                            💾 Simpan
+                        </button>
+                    </div>
+                    <p class="lic-link-hint">Tempel link toko atau halaman produk yang menggunakan motif ini.</p>
+                </div>
+
+            </div>{{-- /lic-body --}}
+
+            {{-- ── Kolom Aksi ────────────────────────────────── --}}
+            <div class="lic-actions">
+
+                <span class="lic-pill {{ $pillClass }}">{{ $statusLabel }}</span>
+
+                <div class="lic-actions__buttons">
+                    <a href="{{ route('license.motif.pdf', $order->id) }}" class="cert-btn cert-btn--dl cert-btn--block">
+                        ⬇ Unduh Motif HD
+                    </a>
+                    <a href="{{ route('license.certificate.pdf', $order->id) }}" class="cert-btn cert-btn--cert cert-btn--block">
+                        📜 Sertifikat PDF
+                    </a>
+                    @if($status === 'expired')
+                    <a href="/koleksi" class="cert-btn cert-btn--renew cert-btn--block">
+                        🔄 Perpanjang
+                    </a>
+                    @endif
                 </div>
 
             </div>
-        </div>
-    </div>
+
+        </div>{{-- /lic-card__inner --}}
+    </div>{{-- /lic-card --}}
+
     @endforeach
+
 </div>
 
 @include('pages.users.cert-modal')
 
 @endsection
 
+@push('styles')
+<style>
+/* ── License Card Grid ───────────────────────────────────── */
+.lic-card {
+    background: var(--clr-white);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(200,169,110,.12);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: box-shadow .2s;
+}
+.lic-card:hover { box-shadow: var(--shadow-md); }
+.lic-card--expired { opacity: .85; }
+
+.lic-card__inner {
+    display: grid;
+    grid-template-columns: 160px 1fr 160px;
+}
+
+/* ── Image Column ────────────────────────────────────────── */
+.lic-img-col {
+    position: relative;
+    flex-shrink: 0;
+}
+.lic-slider {
+    width: 160px;
+    height: 100%;
+    min-height: 200px;
+    border-radius: 0;
+    overflow: hidden;
+}
+.lic-slider__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity .4s ease;
+}
+.lic-img-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: .2rem .6rem;
+    border-radius: 100px;
+}
+.lic-img-badge--active  { background: rgba(39,174,96,.18);  color: #1A6B3C; }
+.lic-img-badge--warn    { background: rgba(186,117,23,.2);  color: #7A4C0A; }
+.lic-img-badge--expired { background: rgba(192,57,43,.15);  color: #922B21; }
+
+/* ── Body Column ─────────────────────────────────────────── */
+.lic-body {
+    padding: 1.3rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+    border-left: 1px solid rgba(200,169,110,.1);
+    border-right: 1px solid rgba(200,169,110,.1);
+    min-width: 0;
+}
+
+.lic-category {
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--clr-gold);
+    font-weight: 700;
+    margin-bottom: .2rem;
+}
+.lic-name {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--clr-brown-dark);
+    line-height: 1.35;
+}
+
+.lic-meta {
+    display: flex;
+    gap: 1.6rem;
+    flex-wrap: wrap;
+}
+.lic-meta__label {
+    font-size: .62rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+    margin-bottom: .15rem;
+    font-weight: 600;
+}
+.lic-meta__value {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--clr-brown-dark);
+}
+.lic-meta__value--expired { color: #C0392B; }
+.lic-meta__value--warn    { color: #B8610A; }
+.lic-meta__value--price   { color: var(--clr-green); }
+.lic-meta__value--muted   { color: var(--clr-text-muted); font-weight: 500; }
+
+/* Progress */
+.lic-progress-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.lic-progress-track {
+    flex: 1;
+    max-width: 260px;
+    height: 5px;
+    background: var(--clr-cream-dark);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.lic-progress__fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--clr-green);
+    transition: width .5s;
+}
+.lic-progress__fill--warn    { background: #E67E22; }
+.lic-progress__fill--expired { background: #E74C3C; }
+.lic-progress-text {
+    font-size: .72rem;
+    color: var(--clr-text-muted);
+    white-space: nowrap;
+}
+
+/* Link Section */
+.lic-link-section {
+    padding-top: .9rem;
+    border-top: 1px dashed rgba(200,169,110,.25);
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+}
+.lic-link-section__label {
+    font-size: .62rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+    font-weight: 700;
+    margin-bottom: .1rem;
+}
+.lic-saved-links {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin-bottom: .2rem;
+}
+.lic-saved-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    background: var(--clr-cream-light);
+    border: 1px solid rgba(200,169,110,.15);
+    border-radius: var(--radius-sm);
+    padding: .55rem .85rem;
+}
+.lic-saved-link__info strong {
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--clr-brown-dark);
+    display: block;
+}
+.lic-saved-link__info span {
+    font-size: .72rem;
+    color: var(--clr-text-muted);
+}
+.lic-saved-link__actions {
+    display: flex;
+    gap: .4rem;
+    flex-shrink: 0;
+}
+.lic-link-input-wrap {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.lic-link-input {
+    flex: 1;
+    min-width: 180px;
+    padding: .45rem .8rem;
+    font-size: .82rem;
+    color: var(--clr-text);
+    background: var(--clr-cream-light);
+    border: 1.5px solid var(--clr-cream-dark);
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    font-family: var(--font-body);
+}
+.lic-link-input:focus {
+    border-color: var(--clr-gold);
+    box-shadow: 0 0 0 3px rgba(200,169,110,.15);
+}
+.lic-link-hint {
+    font-size: .65rem;
+    color: var(--clr-text-muted);
+    opacity: .7;
+}
+
+/* ── Actions Column ──────────────────────────────────────── */
+.lic-actions {
+    padding: 1.3rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: .6rem;
+}
+.lic-actions__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    width: 100%;
+}
+
+/* Status Pill */
+.lic-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .28rem .75rem;
+    border-radius: 100px;
+    align-self: flex-end;
+}
+.lic-pill--active  { background: rgba(39,174,96,.12);  color: #1A6B3C; }
+.lic-pill--warn    { background: rgba(186,117,23,.15);  color: #7A4C0A; }
+.lic-pill--expired { background: rgba(192,57,43,.1);   color: #922B21; }
+
+/* Extra cert-btn variants */
+.cert-btn--block  { display: flex; justify-content: center; width: 100%; }
+.cert-btn--add    { color: var(--clr-gold); border-color: rgba(200,169,110,.35); background: transparent; }
+.cert-btn--add:hover { background: rgba(200,169,110,.1); }
+.cert-btn--cert   { color: #185FA5; border-color: rgba(24,95,165,.2); background: transparent; }
+.cert-btn--cert:hover { background: rgba(24,95,165,.06); }
+.cert-btn--renew  { color: var(--clr-green); border-color: rgba(44,74,62,.2); background: transparent; }
+.cert-btn--renew:hover { background: rgba(44,74,62,.07); }
+.cert-btn--danger { color: #C0392B; border-color: rgba(192,57,43,.2); background: transparent; }
+.cert-btn--danger:hover { background: rgba(192,57,43,.06); }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 860px) {
+    .lic-card__inner {
+        grid-template-columns: 130px 1fr;
+        grid-template-rows: auto auto;
+    }
+    .lic-actions {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items: center;
+        padding: .9rem 1.2rem;
+        border-top: 1px solid rgba(200,169,110,.1);
+        justify-content: space-between;
+    }
+    .lic-actions__buttons {
+        flex-direction: row;
+        width: auto;
+        gap: .4rem;
+    }
+    .cert-btn--block { width: auto; }
+}
+
+@media (max-width: 600px) {
+    .lic-card__inner { grid-template-columns: 110px 1fr; }
+    .lic-slider { width: 110px; min-height: 160px; }
+    .lic-meta { gap: 1rem; }
+    .lic-actions__buttons { flex-wrap: wrap; }
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
-// Initialize product link previews on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Auto-load previews for cards that already have a link
-    document.querySelectorAll('.product-preview-card[data-url]').forEach(card => {
-        const url = card.dataset.url;
-        if (url && url.trim() !== '') {
-            const idx = card.id.replace('preview-card-', '');
-            loadProductPreview(idx, url);
-        }
+
+    /* ── Image slider ─────────────────────────────────── */
+    document.querySelectorAll('.batik-slider').forEach(slider => {
+        const images = JSON.parse(slider.dataset.images);
+        if (images.length < 2) return;
+        let current = 0;
+        const img = slider.querySelector('.batik-slider-img');
+        setInterval(() => {
+            img.style.opacity = 0;
+            setTimeout(() => {
+                current = (current + 1) % images.length;
+                img.src = `https://btx.agunghakase.my.id/api/image/${images[current]}`;
+                img.style.opacity = 1;
+            }, 300);
+        }, 3000);
     });
+
 });
+
+/* ── Show / hide add-link form ────────────────────────── */
+function showAddLink(idx) {
+    const wrap = document.getElementById(`link-input-wrap-${idx}`);
+    if (!wrap) return;
+    wrap.style.display = wrap.style.display === 'none' ? 'flex' : 'none';
+    if (wrap.style.display === 'flex') {
+        document.getElementById(`link-input-${idx}`)?.focus();
+    }
+}
+
+/* ── Save product link ────────────────────────────────── */
+async function saveProductLink(idx, orderId, batikName) {
+    const input = document.getElementById(`link-input-${idx}`);
+    const url   = input?.value?.trim();
+
+    if (!url) {
+        alert('Masukkan URL terlebih dahulu.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/product-links', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ order_id: orderId, url, title: batikName }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message ?? 'Gagal menyimpan link.');
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan. Coba lagi.');
+    }
+}
+
+/* ── Delete product link ──────────────────────────────── */
+async function deleteProductLink(id) {
+    if (!confirm('Hapus link produk ini?')) return;
+
+    try {
+        const response = await fetch(`/product-links/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message ?? 'Gagal menghapus link.');
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan. Coba lagi.');
+    }
+}
 </script>
 @endpush

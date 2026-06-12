@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', Str::limit($motif['name'] ?? 'Detail Motif', 60))
-
+@section('title', Str::limit($motif->nama ?? 'Detail Motif', 60))
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/detail-motif.css') }}">
 @endpush
@@ -9,35 +8,49 @@
 @section('content')
 
 @php
+
 use Illuminate\Support\Str;
 
-$namaBatik = $motif['name'] ?? 'Motif Batik';
-$fileCode  = $motif['seed'] ?? null;
-$tgl       = $motif['created_at'] ?? null;
+$namaBatik = $motif->nama ?? 'Motif Batik';
+
+$fileCode = null;
+
+if (!empty($motif->preview_image)) {
+
+    preg_match('/^(\d+)_/', $motif->preview_image, $match);
+
+    $fileCode = $match[1] ?? null;
+}
+
+$tgl = $motif->api_created_at ?? null;
 
 // =========================
 // SLIDES
 // =========================
 $slides = [];
 
-if (!empty($motif['img'])) {
+// preview utama
+if (!empty($motif->preview_url)) {
+
     $slides[] = [
-        'url' => $motif['img'],
+        'url' => $motif->preview_url,
         'label' => 'Motif Pattern'
     ];
 }
 
-if (!empty($costumeFiles)) {
+// costume images
+if (!empty($motif->costume_images) && is_array($motif->costume_images)) {
 
-    foreach ($costumeFiles as $cf) {
+    foreach ($motif->costume_images as $cf) {
 
         $slides[] = [
-            'url' => $cf,
+            'url' => 'https://btx.agunghakase.my.id/api/image/' . $cf,
             'label' => 'Tampilan Kostum'
         ];
     }
 }
 
+// fallback
 if (empty($slides)) {
 
     $slides[] = [
@@ -45,6 +58,7 @@ if (empty($slides)) {
         'label' => ''
     ];
 }
+
 @endphp
 
 <div class="container">
@@ -121,15 +135,15 @@ if (empty($slides)) {
                     </span>
                 @endif
 
-                @if(!empty($motif['style']))
+                @if(!empty($motif->kategori))
                     <span class="meta-badge">
-                        {{ Str::limit($motif['style'], 30) }}
+                        {{ Str::limit($motif->kategori, 30) }}
                     </span>
                 @endif
 
-                @if(!empty($motif['warna']))
+               @if(!empty($motif->warna))
                     <span class="meta-badge">
-                        {{ $motif['warna'] }}
+                        {{ $motif->warna }}
                     </span>
                 @endif
 
@@ -148,7 +162,7 @@ if (empty($slides)) {
 
             {{-- PRICE --}}
             <p class="motif-harga">
-                Rp {{ number_format($motif['price'] ?? 150000, 0, ',', '.') }}
+                Rp 150.000R
             </p>
 
             <p class="motif-harga-note">
@@ -181,7 +195,7 @@ if (empty($slides)) {
             </div>
 
             {{-- CTA --}}
-            <a href="{{ route('checkout') }}" class="btn-beli">
+            <a href="{{ route('checkout', $motif->id) }}" class="btn-beli">
                 Beli Lisensi
             </a>
 
@@ -193,7 +207,7 @@ if (empty($slides)) {
                 <h3>Deskripsi Motif</h3>
 
                 <p>
-                    {{ $motif['description'] ?? 'Deskripsi belum tersedia.' }}
+                    {{ $motif->deskripsi ?? 'Deskripsi belum tersedia.' }}
                 </p>
 
             </div>
@@ -244,18 +258,18 @@ if (empty($slides)) {
         @foreach($relatedMotifs as $rel)
 
         @php
-            $relName = $rel['name'] ?? 'Batik';
+            $relName = $rel->nama ?? 'Batik';
         @endphp
 
         <a
-            href="{{ route('detail', $rel['id']) }}"
+            href="{{ route('detail', $rel->id) }}"
             class="motif-card"
         >
 
             <div class="card-image-wrap">
 
                 <img
-                    src="{{ $rel['img'] }}"
+                    src="{{ $rel->preview_url }}"
                     alt="{{ $relName }}"
                     loading="lazy"
                 >
@@ -268,12 +282,14 @@ if (empty($slides)) {
 
             <div class="card-body">
 
-                <h3 class="card-title">
-                    {{ $relName }}
-                </h3>
-
+            <h3 class="card-title">
+                {{ $rel->nama }}
+            </h3>
+             <p class="card-desc">
+                {{ \Illuminate\Support\Str::limit($rel->deskripsi, 80) }}
+            </p>
                 <p class="card-price">
-                    Rp {{ number_format($rel['price'] ?? 150000, 0, ',', '.') }}
+                    150000
                 </p>
 
             </div>

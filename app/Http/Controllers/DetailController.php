@@ -2,86 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Batik;
 use App\Helpers\BatikHelper;
 
 class DetailController extends Controller
 {
     public function show($id)
     {
-        $cacheKey = "detail_batik_$id";
-
-        $result = Cache::remember($cacheKey, 3600, function () use ($id) {
-
-            // =========================
-            // GET ALL DATA SEKALI SAJA
-            // =========================
-            $res = Http::timeout(20)
-                ->get('https://btx.agunghakase.my.id/api/batik/getall');
-
-            if (!$res->successful()) {
-                return null;
-            }
-
-            $all = $res->json()['batiks'] ?? [];
-
-            // =========================
-            // CARI MOTIF BERDASARKAN ID
-            // =========================
-            $motif = collect($all)->first(
-                fn($i) => (string)($i['id'] ?? '') === (string)$id
-            );
-
-            if (!$motif) {
-                return null;
-            }
-
-            return [
-                'motif' => $motif,
-                'all'   => $all
-            ];
-        });
+        // =========================
+        // AMBIL MOTIF
+        // =========================
+        $motif = Batik::find($id);
 
         // =========================
-        // JIKA TIDAK DITEMUKAN
+        // JIKA TIDAK ADA
         // =========================
-        if (!$result) {
+        if (!$motif) {
 
             return view('pages.detail', [
-                'motif'         => null,
-                'costumeFiles'  => [],
+                'motif' => null,
                 'relatedMotifs' => [],
-                'error'         => 'Data tidak ditemukan'
+                'error' => 'Data tidak ditemukan'
             ]);
         }
 
         // =========================
-        // FORMAT DATA DENGAN HELPER
-        // =========================
-        $motif = BatikHelper::format($result['motif']);
-
-        // =========================
-        // COSTUME FILES
-        // =========================
-        $costumeFiles = $motif['costume'] ?? [];
-
-        // =========================
         // RELATED MOTIFS
         // =========================
-        $relatedMotifs = collect($result['all'])
-            ->filter(fn($i) =>
-                (string)($i['id'] ?? '') !== (string)$id
-            )
-            ->shuffle()
+        $relatedMotifs = Batik::where('id', '!=', $id)
+            ->inRandomOrder()
             ->take(4)
-            ->map(fn($i) => BatikHelper::format($i))
-            ->values()
-            ->toArray();
+            ->get()
+            ->map(function ($item) {
+
+                $item->deskripsi = BatikHelper::generateDeskripsi(
+                    $item->nama,
+                    $item->kategori,
+                    $item->warna
+                );
+
+                return $item;
+            });
 
         return view('pages.detail', compact(
             'motif',
-            'costumeFiles',
             'relatedMotifs'
         ));
     }

@@ -9,21 +9,24 @@ use App\Http\Controllers\DetailController;
 use App\Http\Controllers\AdminProdukController;
 use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\ProductLinkController;
+use App\Http\Controllers\LicenseController;
+use App\Http\controllers\AdminDashboardController;
 use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
-
 // Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // About
 Route::view('/tentang', 'pages.about')->name('about');
-
-
 
 Route::view('/masuk', 'pages.login')->name('login');
 
@@ -63,25 +66,54 @@ Route::post('/reset-password-with-otp', [ForgotPasswordController::class, 'reset
 // dashboard admin
 Route::middleware(['auth', 'admin'])->group(function () {
 
-    Route::view('/admin', 'pages.admin.dashboard')
+    // DASHBOARD (REAL DATA)
+    Route::get('/admin', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
 
+    // PRODUK
     Route::get('/admin/produk', [AdminProdukController::class, 'index'])
         ->name('admin.produk');
 
+    Route::put('/admin/produk/{id}/deskripsi', 
+        [AdminProdukController::class, 'updateDeskripsi']
+    );
+
+    // TRANSAKSI (boleh nanti dibuat controller juga)
     Route::view('/admin/transaksi', 'pages.admin.transaksi')
         ->name('admin.transaksi');
+    Route::delete('/admin/produk/{id}', [AdminProdukController::class, 'destroy'])->name('admin.produk.destroy');
 
-    Route::view('/admin/sertifikat', 'pages.admin.sertifikat')
-        ->name('admin.sertifikat');
-
-    Route::view('/admin/laporan', 'pages.admin.laporan')
-        ->name('admin.laporan');
+    
 });
 // dashboard user
-Route::view('/dashboard', 'pages.users.dashboard')->name('user.dashboard');
-Route::view('/dashboard/lisensi', 'pages.users.lisensi')->name('user.lisensi');
-Route::view('/dashboard/sertifikat', 'pages.users.sertifikat')->name('user.sertifikat');
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+
+    Route::get(
+    '/dashboard/lisensi',
+    [LicenseController::class, 'index']
+)->name('dashboard.licenses');
+    Route::post('/product-links', [ProductLinkController::class, 'store'])
+        ->name('product-links.store');
+    Route::get(
+    '/dashboard/license/{order}/motif-pdf',
+    [LicenseController::class, 'downloadMotifPdf']
+        )->name('license.motif.pdf');
+    Route::get('/license/certificate/{order}', [LicenseController::class, 'downloadCertificatePdf'])
+    ->name('license.certificate.pdf');
+    Route::delete('/product-links/{productLink}', [ProductLinkController::class, 'destroy'])
+    ->name('product-links.destroy');
+
+});
+Route::get('/verify/{token}', [LicenseController::class, 'verifyCertificate'])
+    ->name('certificate.verify');
+
+Route::get('/phpinfo', function () {
+    phpinfo();
+});
+
 // profil user 
 Route::get('/dashboard/profil', [ProfilController::class, 'index'])
     ->name('user.profil');
@@ -143,58 +175,40 @@ Route::get('/motif/{slug}', function ($slug) {
     return view('pages.detail', compact('motif','relatedMotifs'));
 })->name('motif.detail');
 
-Route::view('/checkout', 'pages.checkout')->name('checkout');
+// Checkout
+Route::middleware('auth')->group(function () {
 
-Route::post('/checkout/process', function () {
-    return 'Checkout berhasil (dummy)';
-})->name('checkout.process');
+    Route::get(
+        '/checkout/{id}',
+        [CheckoutController::class, 'index']
+    )->name('checkout');
 
-Route::view('/payment', 'pages.payment')->name('payment');
+    Route::post(
+        '/checkout/store',
+        [CheckoutController::class, 'store']
+    )->name('checkout.store');
 
-Route::view('/succespayment', 'pages.successpayment')->name('successpayment');
-
-Route::middleware(['auth'])->prefix('profil')->group(function () {
-
-    Route::get('/', [ProfilController::class, 'index'])
-        ->name('pages.users.profil');
-
-    Route::post('/update-info', [ProfilController::class, 'updateInfo'])
-        ->name('pages.user.profil.update-info');
-
-    Route::post('/update-password', [ProfilController::class, 'updatePassword'])
-        ->name('pages.users.profil.update-password');
-
-    Route::post('/update-notif', [ProfilController::class, 'updateNotifications'])
-        ->name('pages.users.profil.update-notif');
-
-    Route::delete('/delete-account', [ProfilController::class, 'deleteAccount'])
-        ->name('pages.users.profil.delete-account');
 });
+// payment 
+Route::middleware('auth')->group(function () {
 
-Route::middleware(['auth', 'verified', 'role:user'])
-    ->prefix('dashboard')
-    ->name('user.')
-    ->group(function () {
+    Route::get(
+        '/payment/{order}',
+        [PaymentController::class, 'show']
+    )->name('payment');
 
-    // Beranda dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Lisensi
-    Route::prefix('lisensi')->name('licenses.')->group(function () {
-            Route::get('/',       [LicenseController::class, 'index'])->name('index');
-            Route::get('/{id}',   [LicenseController::class, 'show'])->name('show');
-    });
-
-    // Sertifikat
-    Route::prefix('sertifikat')->name('certificates.')->group(function () {
-            Route::get('/',           [CertificateController::class, 'index'])->name('index');
-            Route::get('/{id}',       [CertificateController::class, 'show'])->name('show');
-            Route::get('/{id}/unduh', [CertificateController::class, 'download'])->name('download');
-    });
-
-    // Transaksi / riwayat pembelian
-    Route::prefix('transaksi')->name('transactions.')->group(function () {
-            Route::get('/',     [TransactionController::class, 'index'])->name('index');
-            Route::get('/{id}', [TransactionController::class, 'show'])->name('show');
-    });
 });
+Route::post('/midtrans/notification', [PaymentController::class, 'notification']);
+
+Route::get('/payment/success/{order}', [PaymentController::class, 'success'])
+    ->name('successpayment');
+
+Route::get( '/profil',                  [ProfilController::class, 'index'])               ->name('profil');
+
+Route::post('/profil/update-info',      [ProfilController::class, 'updateInfo'])          ->name('profil.update-info');
+
+Route::post('/profil/update-password',  [ProfilController::class, 'updatePassword'])      ->name('profil.update-password');
+
+Route::post('/profil/update-notif',     [ProfilController::class, 'updateNotifications']) ->name('profil.update-notif');
+
+Route::post('/profil/delete-account',   [ProfilController::class, 'deleteAccount'])       ->name('profil.delete-account');

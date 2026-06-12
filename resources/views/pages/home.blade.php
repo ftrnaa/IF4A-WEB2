@@ -169,51 +169,71 @@
             <div class="motif-grid" id="homeMotifGrid">
                 @forelse($motifs as $m)
                @php
-    $keyword = $m['name'] ?? 'Motif Batik';
 
     $styleName = \Illuminate\Support\Str::limit(
-        ucfirst($m['kategori'] ?? 'Kontemporer'),
+        ucfirst($m->kategori ?? 'Kontemporer'),
         35
     );
 
     $cardName = \Illuminate\Support\Str::limit(
-        ucfirst($m['name'] ?? 'Motif Batik'),
+        ucfirst($m->nama ?? 'Motif Batik'),
         45
     );
 
     // kode preview
-    $fileCode = $m['code'] ?? '';
+    $fileCode = null;
+
+    if (!empty($m->preview_image)) {
+
+        preg_match(
+            '/^(\d+)_/',
+            $m->preview_image,
+            $match
+        );
+
+        $fileCode = $match[1] ?? null;
+    }
 
     // tanggal
     $tgl = '';
-    if (!empty($m['created_at'])) {
+
+    if (!empty($m->api_created_at)) {
+
         try {
-            $tgl = \Carbon\Carbon::parse($m['created_at'])
+
+            $tgl = \Carbon\Carbon::parse($m->api_created_at)
                 ->format('d M Y');
+
         } catch (\Exception $e) {}
     }
 
     // slideshow images
     $slides = [];
 
-    if (!empty($m['img'])) {
-        $slides[] = $m['img'];
+    if (!empty($m->preview_url)) {
+        $slides[] = $m->preview_url;
     }
 
-    if (!empty($m['costume']) && is_array($m['costume'])) {
-        foreach ($m['costume'] as $c) {
-            $slides[] = $c;
+    if (!empty($m->costume_images) && is_array($m->costume_images)) {
+
+        foreach ($m->costume_images as $c) {
+
+            $slides[] = 'https://btx.agunghakase.my.id/api/image/' . $c;
         }
     }
 
     if (empty($slides)) {
+
         $slides[] = 'https://via.placeholder.com/300x230?text=No+Image';
     }
+
 @endphp
 
+    
+
                 <a class="motif-card"
-                   href="{{ route('detail', ['id' => $m['id']]) }}"
-                   data-kategori="{{ $m['kategori'] ?? 'semua' }}">
+                   href="{{ route('detail', ['id' => $m->id]) }}"
+                   data-kategori="{{ $m->kategori ?? 'semua' }}">
 
                     {{-- IMAGE SLIDESHOW --}}
                     <div class="card-image-wrap" data-slides="{{ json_encode($slides) }}">
@@ -249,7 +269,7 @@
 
                         <div class="card-footer">
                             <p class="card-price">
-    Rp {{ number_format($m['price'] ?? 0, 0, ',', '.') }}
+    Rp 150.000
 </p>
                             @if($tgl)
                                 <span class="card-date">{{ $tgl }}</span>

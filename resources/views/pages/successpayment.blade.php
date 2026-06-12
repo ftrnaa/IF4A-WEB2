@@ -180,7 +180,7 @@
 
             <div class="order-row">
                 <span>No Pesanan</span>
-                <span>#{{ $order->kode ?? 'BTK-001' }}</span>
+                <span>#{{ $order->kode_order }}</span>
             </div>
 
             <div class="order-row">
@@ -190,7 +190,9 @@
 
             <div class="order-row">
                 <span>Metode</span>
-                <span>{{ $order->metode_display ?? 'Virtual Account' }}</span>
+                <span>
+    {{ strtoupper($order->payment_channel ?? $order->payment_type ?? '-') }}
+</span>
             </div>
 
             <div class="order-row highlight">

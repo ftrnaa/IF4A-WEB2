@@ -2,18 +2,7 @@
 
 @section('title', 'Pembayaran — BatikAI')
 
-@php
-$order = (object)[
-    'id' => 1,
-    'total' => 200000,
-    'motif' => (object)[
-        'nama' => 'Parang Kusumo'
-    ]
-];
 
-$diskon = 0;
-$pajak = 0;
-@endphp
 
 @push('styles')
 <style>
@@ -184,19 +173,11 @@ body {
             </h3>
 
             <div class="summary-row">
-                <span>{{ $order->motif->nama }}</span>
+                <span>{{ $order->batik->nama }}</span>
                 <span>Rp {{ number_format($order->total,0,',','.') }}</span>
             </div>
 
-            <div class="summary-row">
-                <span>Diskon</span>
-                <span>Rp {{ number_format($diskon,0,',','.') }}</span>
-            </div>
-
-            <div class="summary-row">
-                <span>Pajak</span>
-                <span>Rp {{ number_format($pajak,0,',','.') }}</span>
-            </div>
+            
 
             <hr>
 
@@ -206,11 +187,14 @@ body {
             </div>
 
             {{-- FORM --}}
-            <form action="{{ route('successpayment') }}" method="GET">
-                <button class="btn-submit">
-                    KONFIRMASI PEMBAYARAN
-                </button>
-            </form>
+            <button
+    id="pay-button"
+    class="btn-submit"
+    type="button">
+
+    BAYAR SEKARANG
+
+</button>
 
         </div>
 
@@ -238,5 +222,44 @@ function selectMethod(method, el) {
     // change VA
     document.getElementById('vaNumber').innerText = vaList[method];
 }
+</script>
+<script
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="{{ config('midtrans.client_key') }}">
+</script>
+<script>
+
+document
+.getElementById('pay-button')
+.addEventListener('click', function () {
+
+    snap.pay('{{ $snapToken }}', {
+
+        onSuccess: function(result) {
+
+           window.location.href =
+    "{{ route('successpayment', $order->id) }}";
+        },
+
+        onPending: function(result) {
+
+            alert(
+                'Menunggu pembayaran'
+            );
+
+        },
+
+        onError: function(result) {
+
+            alert(
+                'Pembayaran gagal'
+            );
+
+        }
+
+    });
+
+});
+
 </script>
 @endpush

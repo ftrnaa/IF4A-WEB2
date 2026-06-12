@@ -81,8 +81,9 @@
 
     {{-- COUNTER --}}
     <div class="produk-counter-info">
-        Menampilkan <strong id="produkCountVisible">{{ count($products) }}</strong> dari
-        <strong>{{ count($products) }}</strong> motif batik
+        Menampilkan <strong id="produkCountVisible">{{ $products->count() }}</strong> dari
+        <strong>{{ $products->total() }}</strong> motif batik
+        &nbsp;·&nbsp; Halaman {{ $products->currentPage() }} / {{ $products->lastPage() }}
     </div>
 
     {{-- GRID --}}
@@ -92,17 +93,33 @@
 
         @php
             $slides = [];
-            if (!empty($p['img'])) $slides[] = $p['img'];
-            if (!empty($p['costume'])) {
-                foreach ($p['costume'] as $c) $slides[] = $c;
-            }
-            if (empty($slides)) $slides[] = 'https://via.placeholder.com/400x300?text=BatikAI';
 
-            $name     = $p['name']        ?? 'Batik';
-            $kategori = $p['kategori']    ?? 'kontemporer';
-            $desc     = $p['description'] ?? '';
-            $price    = $p['price']       ?? 0;
-            $code     = $p['code']        ?? '';
+            if (!empty($p['preview'])) {
+                $preview = $p['preview'];
+                if (!filter_var($preview, FILTER_VALIDATE_URL)) {
+                    $preview = 'https://btx.agunghakase.my.id/api/image/' . ltrim($preview, '/');
+                }
+                $slides[] = $preview;
+            }
+
+            if (!empty($p['costume_images'])) {
+                foreach ($p['costume_images'] as $c) {
+                    if (!filter_var($c, FILTER_VALIDATE_URL)) {
+                        $c = 'https://btx.agunghakase.my.id/api/image/' . ltrim($c, '/');
+                    }
+                    $slides[] = $c;
+                }
+            }
+
+            if (empty($slides)) {
+                $slides[] = 'https://via.placeholder.com/400x300?text=BatikAI';
+            }
+
+            $name     = $p['nama']      ?? 'Batik';
+            $kategori = $p['kategori']  ?? 'kontemporer';
+            $desc     = $p['deskripsi'] ?? '';
+            $price    = $p->price       ?? 150000;
+            $code     = $p->code        ?? '';
         @endphp
 
         <div class="motif-card product-item"
@@ -124,7 +141,6 @@
 
                 <span class="card-badge">Batik</span>
 
-                {{-- Zoom hint icon --}}
                 <span class="card-zoom-hint">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -189,6 +205,13 @@
         </div>
 
     </div>
+
+    {{-- PAGINATION — di luar grid, setelah grid --}}
+    @if($products->hasPages())
+    <div class="produk-pagination">
+        {{ $products->links() }}
+    </div>
+    @endif
 
 </div>
 
@@ -370,12 +393,20 @@
         @foreach($products as $p)
         @php
             $slides = [];
-            if (!empty($p['img'])) $slides[] = $p['img'];
-            if (!empty($p['costume'])) foreach ($p['costume'] as $c) $slides[] = $c;
-            if (empty($slides)) $slides[] = 'https://via.placeholder.com/400x300?text=BatikAI';
+            if (!empty($p->img)) {
+                $slides[] = $p->img;
+            }
+            if (!empty($p->costume)) {
+                foreach ($p->costume as $c) {
+                    $slides[] = $c;
+                }
+            }
+            if (empty($slides)) {
+                $slides[] = 'https://via.placeholder.com/400x300?text=BatikAI';
+            }
         @endphp
         {
-            name: @json($p['name'] ?? ''),
+            name: @json($p['nama'] ?? ''),
             kategori: @json($p['kategori'] ?? ''),
             slides: @json($slides),
         },

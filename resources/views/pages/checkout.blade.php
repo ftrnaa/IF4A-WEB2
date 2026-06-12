@@ -2,19 +2,6 @@
 
 @section('title', 'Checkout — BatikAI')
 
-@php
-$motif = (object)[
-    'id' => 1,
-    'nama' => 'Parang Kusumo',
-    'kategori' => 'Klasik',
-    'harga' => 200000,
-    'thumbnail' => 'images/batik1.jpg'
-];
-
-$diskon = 0;
-$pajak = 0;
-$total = $motif->harga - $diskon + $pajak;
-@endphp
 
 @push('styles')
 <style>
@@ -143,9 +130,22 @@ body {
     <div class="checkout-header">
         <h1>Check<span>out</span></h1>
     </div>
-
-    <form action="{{ route('payment') }}" method="GET">
-        @csrf
+@if ($errors->any())
+<div class="alert alert-danger mb-3">
+    <ul class="mb-0">
+        @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+    <form action="{{ route('checkout.store') }}" method="POST">
+    @csrf
+    <input
+    type="hidden"
+    name="batik_id"
+    value="{{ $motif->id }}"
+>
 
         <div class="checkout-layout">
 
@@ -159,7 +159,7 @@ body {
                     </h3>
 
                     <div class="item">
-                        <img src="{{ asset($motif->thumbnail) }}">
+                        <img src="{{ $motif->preview_url }}">
                         <div>
                             <h4 style="font-family:Playfair Display;">
                                 {{ $motif->nama }}
@@ -251,20 +251,13 @@ body {
         <span>Rp {{ number_format($motif->harga,0,',','.') }}</span>
     </div>
 
-    <div class="summary-row">
-        <span>Diskon</span>
-        <span>Rp {{ number_format($diskon,0,',','.') }}</span>
-    </div>
+   
 
-    <div class="summary-row">
-        <span>Pajak</span>
-        <span>Rp {{ number_format($pajak,0,',','.') }}</span>
-    </div>
 
     <div class="summary-total">
-        <span>Total</span>
-        <span>Rp {{ number_format($total,0,',','.') }}</span>
-    </div>
+    <span>Total</span>
+    <span>Rp {{ number_format($motif->harga,0,',','.') }}</span>
+</div>
 
     {{-- FIX BUTTON --}}
     <button type="submit" class="btn-submit">

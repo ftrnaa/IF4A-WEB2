@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Certificate extends Model
+class ProductLink extends Model
 {
     protected $fillable = [
         'order_id',
-        'certificate_number',
-        'qr_token',
-        'issued_at',
+        'title',
+        'url',
     ];
 
     public function order()

@@ -7,44 +7,40 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
+{
+    Schema::table('users', function (Blueprint $table) {
 
+        if (!Schema::hasColumn('users', 'first_name')) {
             $table->string('first_name')->nullable();
+        }
+
+        if (!Schema::hasColumn('users', 'last_name')) {
             $table->string('last_name')->nullable();
+        }
 
-            $table->string('phone')->nullable();
-            $table->string('city')->nullable();
-            $table->string('province')->nullable();
+        if (!Schema::hasColumn('users', 'google_id')) {
+            $table->string('google_id')->nullable();
+        }
 
-            $table->text('bio')->nullable();
-
-            $table->string('avatar')->nullable();
-
-            $table->boolean('notif_license')->default(true);
-            $table->boolean('notif_cert')->default(true);
-            $table->boolean('notif_promo')->default(true);
-            $table->boolean('notif_news')->default(true);
-        });
-    }
+    });
+}
 
     public function down(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
+{
+    Schema::table('users', function (Blueprint $table) {
 
-            $table->dropColumn([
-                'first_name',
-                'last_name',
-                'phone',
-                'city',
-                'province',
-                'bio',
-                'avatar',
-                'notif_license',
-                'notif_cert',
-                'notif_promo',
-                'notif_news'
-            ]);
-        });
-    }
+        if (Schema::hasColumn('users', 'first_name')) {
+            $table->dropColumn('first_name');
+        }
+
+        if (Schema::hasColumn('users', 'last_name')) {
+            $table->dropColumn('last_name');
+        }
+
+        if (Schema::hasColumn('users', 'google_id')) {
+            $table->dropColumn('google_id');
+        }
+
+    });
+}
 };

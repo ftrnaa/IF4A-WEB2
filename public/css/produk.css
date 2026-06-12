@@ -394,7 +394,7 @@
 
 .card-title {
     font-size: 17px;
-    font-weight: 700;
+    font-weight: 400;   /* ← normal */
     margin: 0 0 10px;
     line-height: 1.28;
     color: #1e1a14;
@@ -695,5 +695,95 @@
     *, *::before, *::after {
         animation-duration: .01ms !important;
         transition-duration: .01ms !important;
+    }
+}
+/* ============================================================
+   PAGINATION — tambahkan ke bagian paling bawah produk.css
+   ============================================================ */
+
+.produk-pagination {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 0 2rem;
+}
+
+/* Reset layout nav Tailwind */
+.produk-pagination nav,
+.produk-pagination nav > div {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+}
+
+/* Sembunyikan teks "Showing X to Y of Z results" */
+.produk-pagination nav > div:first-child { display: none !important; }
+.produk-pagination nav > div:last-child  { display: flex !important; }
+
+/* Reset semua <span> dan <a> — override Tailwind px-4 py-2 dll */
+.produk-pagination nav span,
+.produk-pagination nav a {
+    all: unset !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    padding: 0 8px !important;
+    border-radius: 8px !important;
+    font-size: .82rem !important;
+    font-weight: 500 !important;
+    font-family: inherit !important;
+    border: 1.5px solid var(--clr-cream-dark, #d9c9a8) !important;
+    background: #fff !important;
+    color: var(--clr-brown-dark, #3a2a1a) !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    transition: background .2s, border-color .2s, color .2s, box-shadow .2s !important;
+    box-sizing: border-box !important;
+}
+
+/* Hover link */
+.produk-pagination nav a:hover {
+    border-color: var(--clr-gold, #c8a96e) !important;
+    background: rgba(200,169,110,.09) !important;
+    color: var(--clr-gold, #c8a96e) !important;
+    box-shadow: 0 0 0 3px rgba(200,169,110,.15) !important;
+}
+
+/* Halaman aktif */
+.produk-pagination nav span[aria-current="page"] {
+    background: linear-gradient(135deg, #B8924A, #D4AA6A) !important;
+    border-color: #B8924A !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 3px 10px rgba(184,146,74,.35) !important;
+    cursor: default !important;
+    opacity: 1 !important;
+}
+
+/* Disabled prev/next */
+.produk-pagination nav span[aria-disabled="true"] {
+    opacity: .35 !important;
+    cursor: not-allowed !important;
+    background: #fdf8f0 !important;
+}
+
+/* Dots "..." */
+.produk-pagination nav span:not([aria-current]):not([aria-disabled]) {
+    border-color: transparent !important;
+    background: transparent !important;
+    color: var(--clr-text-muted, #9a8a72) !important;
+    cursor: default !important;
+    opacity: 1 !important;
+}
+
+@media (max-width: 480px) {
+    .produk-pagination nav span,
+    .produk-pagination nav a {
+        min-width: 30px !important;
+        height: 30px !important;
+        font-size: .75rem !important;
     }
 }

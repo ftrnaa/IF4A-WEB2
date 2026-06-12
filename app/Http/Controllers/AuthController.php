@@ -33,7 +33,7 @@ class AuthController extends Controller
     // auto login setelah register
     Auth::login($user);
 
-    return redirect()->route('user.dashboard');
+    return redirect()->route('dashboard');
 }
 
     // LOGIN
@@ -56,7 +56,7 @@ class AuthController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('user.dashboard');
+        return redirect()->route('dashboard');
     }
 
     return back()->withErrors([
@@ -106,10 +106,8 @@ public function handleGoogleCallback()
 
     Auth::login($user);
 
-    if ($user->role === 'admin') {
-        return redirect()->route('admin.dashboard');
-    }
-
-    return redirect()->route('user.dashboard');
+return $user->hasRole('admin')
+    ? redirect()->route('admin.dashboard')
+    : redirect()->route('user.dashboard');
 }
 }

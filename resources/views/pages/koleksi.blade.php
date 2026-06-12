@@ -69,30 +69,43 @@
         @forelse($motifs as $m)
 
         @php
-            $slides = [];
 
-            if (!empty($m['img'])) {
-                $slides[] = $m['img'];
-            }
+    $slides = [];
 
-            if (!empty($m['costume'])) {
-                foreach ($m['costume'] as $c) {
-                    $slides[] = $c;
-                }
-            }
+    // preview utama
+    if (!empty($m->preview_url)) {
 
-            if (empty($slides)) {
-                $slides[] = 'https://via.placeholder.com/300x230?text=BatikAI';
-            }
+        $slides[] = $m->preview_url;
+    }
 
-            $name     = $m['name']        ?? 'Batik';
-            $kategori = $m['kategori']    ?? 'kontemporer';
-            $desc     = $m['description'] ?? '';
-            $price    = $m['price']       ?? 0;
-        @endphp
+    // costume images
+    if (!empty($m->costume_images) && is_array($m->costume_images)) {
+
+        foreach ($m->costume_images as $c) {
+
+            $slides[] = 'https://btx.agunghakase.my.id/api/image/' . $c;
+        }
+    }
+
+    // fallback
+    if (empty($slides)) {
+
+        $slides[] = 'https://via.placeholder.com/300x230?text=BatikAI';
+    }
+
+    $name     = $m->nama ?? 'Batik';
+
+    $kategori = $m->kategori ?? 'kontemporer';
+
+    $desc     = $m->deskripsi ?? '';
+
+    // sementara dummy
+    $price = 150000;
+
+@endphp
 
         <a class="motif-card"
-           href="{{ route('detail', ['id' => $m['id']]) }}"
+           href="{{ route('detail', ['id' => $m->id]) }}"
            data-kategori="{{ $kategori }}">
 
             {{-- IMAGE --}}
@@ -112,11 +125,20 @@
             <div class="card-body">
 
                 <p class="card-style">{{ $kategori }}</p>
-                @if(!empty($m['code']))
-                    <p class="card-code">
-                        #{{ $m['code'] }}
-                    </p>
-                @endif
+                @if(!empty($m->preview_image))
+
+    @php
+        preg_match('/^(\d+)_/', $m->preview_image, $match);
+        $code = $match[1] ?? null;
+    @endphp
+
+    @if($code)
+        <p class="card-code">
+            #{{ $code }}
+        </p>
+    @endif
+
+@endif
                 <h3 class="card-title">{{ $name }}</h3>
 
                 <p class="card-desc">
