@@ -51,4 +51,27 @@ class BatikHelper
 
     return $templates[array_rand($templates)];
 }
+
+public static function format(array $item): array
+{
+    $nama = self::extractNama($item['keyword'] ?? '');
+    $kategori = self::extractKategori($item['style'] ?? '');
+    $warna = $item['warna'] ?? 'default';
+
+    return [
+        'id' => $item['id'] ?? null,
+        'nama' => $nama,
+        'kategori' => $kategori,
+        'warna' => $warna,
+        'style' => $item['style'] ?? '',
+        'keyword' => $item['keyword'] ?? '',
+        'file_preview' => $item['file_preview'] ?? null,
+        'costume_images' => $item['costume_images'] ?? [],
+        'deskripsi' => self::generateDeskripsi(
+            $nama,
+            $kategori,
+            $warna
+        ),
+    ];
+}
 }

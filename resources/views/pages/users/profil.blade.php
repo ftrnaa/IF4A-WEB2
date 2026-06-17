@@ -49,32 +49,65 @@ $user = $user ?? auth()->user();
     {{-- ══════════════════════════════════════════════════════════════════ --}}
     <div class="user-card">
         <div class="user-card__header">
-            <p class="user-card__title">👤 Informasi Pribadi</p>
+            <p class="user-card__title">INFORMASI PRIBADI</p>
         </div>
         <div class="user-card__body">
 
             {{-- ── Avatar preview ──────────────────────────────────────── --}}
-            <div class="profile-avatar-section">
-                <div class="profile-avatar-wrap">
-                    <img src="{{ optional($user)->avatar
-    ? asset('storage/' . $user->avatar)
-    : asset('images/default-avatar.png') }}" alt="Avatar">
-                    <label class="profile-avatar-edit"
-                           for="avatar-trigger"
-                           title="Ganti foto">✏</label>
-                    {{-- Trigger preview — BUKAN bagian form --}}
-                    <input type="file" id="avatar-trigger"
-                           accept="image/*" style="display:none"
-                           onchange="previewAvatar(this)">
-                </div>
-                <div>
-                    <p class="profile-name">{{ $user->full_name }}</p>
-                    <p class="profile-email">{{ $user->email }}</p>
-                    <span class="profile-member-since">
-                        ✦ Member sejak {{ $user->created_at->translatedFormat('M Y') }}
-                    </span>
-                </div>
-            </div>
+<div class="profile-avatar-section">
+
+    <div class="profile-avatar-wrap">
+        <img
+            id="profile-avatar-img"
+            src="{{ $user->avatar
+                ? asset('storage/' . $user->avatar)
+                : asset('images/default-avatar.png') }}"
+            alt="Avatar">
+            <style>
+            .profile-avatar-wrap{
+    width:90px;
+    height:90px;
+    position:relative;
+    flex-shrink:0;
+}
+
+#profile-avatar-img{
+    width:90px !important;
+    height:90px !important;
+    min-width:90px !important;
+    min-height:90px !important;
+    max-width:90px !important;
+    max-height:90px !important;
+
+    border-radius:50%;
+    object-fit:cover;
+    display:block;
+}
+</style>
+
+        <label
+            class="profile-avatar-edit"
+            for="avatar"
+            title="Ganti foto">
+            ✏
+        </label>
+    </div>
+
+    <div class="profile-avatar-info">
+        <p class="profile-name">
+            {{ $user->first_name }} {{ $user->last_name }}
+        </p>
+
+        <p class="profile-email">
+            {{ $user->email }}
+        </p>
+
+        <span class="profile-member-since">
+            ✦ Member sejak {{ $user->created_at->translatedFormat('M Y') }}
+        </span>
+    </div>
+
+</div>
 
             {{-- ── Form Informasi Pribadi ───────────────────────────────── --}}
             <form class="profile-form"
@@ -84,8 +117,13 @@ $user = $user ?? auth()->user();
                 @csrf
 
                 {{-- File avatar di dalam form (disync dari avatar-trigger via JS) --}}
-                <input type="file" name="avatar" id="avatar-file-input"
-                       accept="image/*" style="display:none">
+                <input
+                   type="file"
+                   name="avatar"
+                   id="avatar"
+                   accept="image/*"
+                   style="display:none"
+                   onchange="previewAvatar(this)">
 
                 <p class="profile-section-divider">Data Diri</p>
 
@@ -209,7 +247,7 @@ $user = $user ?? auth()->user();
         {{-- ── Kartu Keamanan ────────────────────────────────────────── --}}
         <div class="user-card">
             <div class="user-card__header">
-                <p class="user-card__title">🔒 Keamanan</p>
+                <p class="user-card__title">KEAMANAN</p>
             </div>
             <div class="user-card__body">
                 <form class="profile-form"
@@ -240,7 +278,7 @@ $user = $user ?? auth()->user();
                     </div>
 
                     <div class="profile-form-group">
-                        <label class="profile-form-label" for="pass_new">Sandi Baru</label>
+                        <label class="profile-form-label" for="pass_new">Kata Sandi Baru</label>
                         <div style="position:relative">
                             <input type="password" id="pass_new" name="pass_new"
                                    class="profile-form-input @error('pass_new') is-invalid @enderror"
@@ -252,14 +290,14 @@ $user = $user ?? auth()->user();
                     </div>
 
                     <div class="profile-form-group">
-                        <label class="profile-form-label" for="pass_confirm">Konfirmasi Sandi Baru</label>
+                        <label class="profile-form-label" for="pass_confirm">Konfirmasi Kata Sandi Baru</label>
                         <input type="password" id="pass_confirm" name="pass_confirm"
                                class="profile-form-input @error('pass_confirm') is-invalid @enderror"
                                placeholder="Ulangi sandi baru">
                     </div>
 
                     <div style="display:flex;justify-content:flex-end">
-                        <button type="submit" class="btn-save">🔑 Ubah Sandi</button>
+                        <button type="submit" class="btn-save">🔑 Ubah Kata Sandi</button>
                     </div>
                 </form>
             </div>
@@ -268,7 +306,7 @@ $user = $user ?? auth()->user();
         {{-- ── Kartu Notifikasi ───────────────────────────────────────── --}}
         <div class="user-card">
             <div class="user-card__header">
-                <p class="user-card__title">🔔 Notifikasi</p>
+                <p class="user-card__title">NOTIFIKASI</p>
             </div>
             <div class="user-card__body">
                 <form method="POST" action="{{ route('pages.users.profil.update-notif') }}">
@@ -311,7 +349,7 @@ $user = $user ?? auth()->user();
         {{-- ── Kartu Danger Zone ──────────────────────────────────────── --}}
         <div class="user-card">
             <div class="user-card__header">
-                <p class="user-card__title" style="color:#C0392B">⚠ Zona Berbahaya</p>
+                <p class="user-card__title" style="color:#C0392B">HAPUS AKUN</p>
             </div>
             <div class="user-card__body">
                 <div class="danger-zone">
@@ -320,7 +358,7 @@ $user = $user ?? auth()->user();
                         <p>Akun dan semua data akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</p>
                     </div>
                    <form method="POST"
-      action="{{ route('user.profile.delete-account') }}"
+      action="{{ route('pages.users.profil.delete-account') }}"
       onsubmit="return confirm('Yakin ingin menghapus akun?\nTindakan ini TIDAK BISA dibatalkan.')">
     @csrf
     @method('DELETE')
@@ -353,11 +391,6 @@ function previewAvatar(triggerInput) {
         document.getElementById('profile-avatar-img').src = e.target.result;
     };
     reader.readAsDataURL(file);
-
-    // Salin file ke input yang ada di dalam <form> agar ikut ter-submit
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    document.getElementById('avatar-file-input').files = dt.files;
 }
 
 // ── Toggle show/hide password ─────────────────────────────────────────────────

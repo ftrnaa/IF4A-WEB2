@@ -2,160 +2,97 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use App\Models\Order;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Endroid\QrCode\Builder\Builder;
-use Endroid\QrCode\Writer\PngWriter;
 use App\Models\Certificate;
-
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class LicenseController extends Controller
 {
-    public function index()
+    /**
+     * User melihat / download sertifikat miliknya sendiri.
+     */
+    public function downloadCertificatePdf(Order $order)
 {
-    $orders = Order::with([
-        'batik',
-        'productLinks'
-    ])
-    ->where('user_id', auth()->id())
-    ->where('status', 'paid')
-    ->latest()
-    ->get();
-
-    // Tambahkan ini
-    $aktif = 0;
-    $hampirHabis = 0;
-    $kedaluwarsa = 0;
-
-    foreach ($orders as $order) {
-    $daysLeft = now()->diffInDays(
-        Carbon::parse($order->created_at)->addYear(),
-        false
+    abort_unless(
+        $order->user_id === Auth::id(),
+        403
     );
 
-    if ($daysLeft < 0) {
-        $kedaluwarsa++;
-    } elseif ($daysLeft <= 30) {
-        $hampirHabis++;
-    } else {
-        $aktif++;
-    }
-}
-
-    return view('pages.users.lisensi', compact(
-        'orders',
-        'aktif',
-        'hampirHabis',
-        'kedaluwarsa'
-        
-    ));
-}
-public function downloadMotifPdf(Order $order)
-{
-    if ($order->user_id !== auth()->id()) {
-        abort(403);
-    }
-
-    $order->load('batik');
-
-   $imageUrl = $order->batik->preview_url;
-
-$response = Http::timeout(30)->get($imageUrl);
-
-if (!$response->successful()) {
-    abort(404, 'Gagal mengambil gambar motif');
-}
-
-$imageContent = $response->body();
-
-$imageBase64 = base64_encode($imageContent);
-
-$imageSrc = 'data:image/webp;base64,' . $imageBase64;
-
-    $pdf = Pdf::loadView('pdf.motif', [
-        'imageSrc' => $imageSrc
-    ]);
-
-   $pdf->setPaper('a3', 'portrait');
-
-    return $pdf->download(
-        'Motif-' . $order->batik->nama . '.pdf'
+    abort_unless(
+        $order->status === 'paid',
+        403
     );
-}
-public function downloadCertificatePdf(Order $order)
-{
-    if ($order->user_id !== auth()->id()) {
-        abort(403);
-    }
 
-    $order->load(['batik', 'user']);
+    $order->load(['user', 'batik']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | 1. BUAT / AMBIL SERTIFIKAT
-    |--------------------------------------------------------------------------
-    */
     $certificate = Certificate::firstOrCreate(
-        ['order_id' => $order->id],
         [
-            'certificate_number' => 'BTA-' . date('Y') . '-' . strtoupper(Str::random(8)),
-            'qr_token' => Str::uuid(),
+            'order_id' => $order->id
+        ],
+        [
+            'user_id'            => $order->user_id,
+            'certificate_number' => 'BATIKAI-' .
+                date('Y') . '-' .
+                strtoupper(Str::random(8)),
+
+            'qr_token' => (string) Str::uuid(),
+
             'issued_at' => now(),
         ]
     );
 
-    /*
-    |--------------------------------------------------------------------------
-    | 3. QR LINK (AMAN + VERIFIKASI)
-    |--------------------------------------------------------------------------
-    */
-   $verifyUrl = 'http://192.168.1.11:8000/verify/' . $certificate->qr_token;
+    $pdf = AdminTransactionController::buildCertificatePdf(
+        $order,
+        $certificate
+    );
 
-$builder = new Builder(
-    writer: new PngWriter(),
-    data: $verifyUrl
-);
-
-$result = $builder->build();
-
-$qrSrc = 'data:image/png;base64,' . base64_encode(
-    $result->getString()
-);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | 4. GENERATE PDF
-    |--------------------------------------------------------------------------
-    */
-    $issuedAt = Carbon::parse($certificate->issued_at);
-$expiredAt = $issuedAt->copy()->addYear();
-
-$pdf = Pdf::loadView('pdf.certificate', [
-    'order' => $order,
-    'batik' => $order->batik,
-    'qrSrc' => $qrSrc,
-    'certificate' => $certificate,
-    'issuedAt' => $issuedAt,
-    'expiredAt' => $expiredAt,
-]);
-
-    return $pdf->download('Sertifikat-' . $order->kode_order . '.pdf');
+    return $pdf->download(
+        'Sertifikat-' . $order->kode_order . '.pdf'
+    );
 }
-public function verifyCertificate($token)
-{
-    $certificate = Certificate::with(['order.batik', 'order.user'])
-        ->where('qr_token', $token)
-        ->first();
 
-    if (!$certificate) {
-        return view('certificate.invalid');
+    /**
+     * Admin melihat sertifikat user.
+     */
+    public function viewCertificatePdf(Order $order)
+    {
+        abort_unless(
+            Auth::check()
+            && Auth::user()->role === 'admin',
+            403,
+            'Akses ditolak.'
+        );
+
+        $order->load(['user', 'batik']);
+
+        return app(AdminTransactionController::class)
+            ->viewCertificate($order);
     }
 
-    return view('certificate.verify', compact('certificate'));
+    public function verifyCertificate($token)
+{
+    $certificate = Certificate::with([
+        'order',
+        'order.batik',
+        'order.user'
+    ])->where('qr_token', $token)->first();
+
+    if (!$certificate) {
+        abort(404, 'Sertifikat tidak ditemukan');
+    }
+
+    return view(
+        'certificate.verify',
+        compact('certificate')
+    );
 }
+
+    /**
+     * Halaman lisensi user.
+     */
+    public function index()
+    {
+        return view('pages.dashboard.licenses');
+    }
 }

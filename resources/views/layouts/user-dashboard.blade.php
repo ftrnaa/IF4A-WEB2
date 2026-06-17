@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard — BatikAI')</title>
+    <title>@yield('title', 'Dashboard — Batikx')</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
     <aside class="user-sidebar" id="user-sidebar">
 
         <div class="user-sidebar__header">
-            <a href="/" class="user-sidebar__logo">Batik<span>AI</span></a>
+            <a href="/" class="user-sidebar__logo">Batik</a>
             <div class="user-sidebar__profile">
                 <div class="user-sidebar__avatar-wrap">
                     <img src="https://picsum.photos/seed/userme/80/80"
@@ -44,7 +44,7 @@
                         <span class="user-nav-link__icon">
                             <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
                         </span>
-                        Beranda
+                        Dashboard
                     </a>
                 </li>
                 <li>
@@ -103,8 +103,6 @@
                 </button>
                 <div class="user-topbar__breadcrumb">
                     <span>Dashboard</span>
-                    <span class="sep">/</span>
-                    <span class="current">@yield('breadcrumb', 'Beranda')</span>
                 </div>
             </div>
             <div class="user-topbar__right">

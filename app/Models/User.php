@@ -19,6 +19,17 @@ class User extends Authenticatable
         'password',
         'role',
         'google_id',
+
+        'phone',
+        'city',
+        'province',
+        'bio',
+        'avatar',
+
+        'notif_license',
+        'notif_cert',
+        'notif_promo',
+        'notif_news',
     ];
 
     protected $hidden = [

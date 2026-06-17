@@ -210,9 +210,12 @@
             👁 Lihat
         </button>
 
-        <button class="cert-btn cert-btn--dl">
-            ⬇ Unduh
-        </button>
+      <a
+    href="{{ route('license.certificate.pdf', $order->id) }}"
+    class="cert-btn cert-btn--dl"
+>
+    ⬇ Unduh
+</a>
 
     </div>
 

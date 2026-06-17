@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin — BatikAI')</title>
+    <title>@yield('title', 'Admin — Batix')</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
     <aside class="admin-sidebar" id="sidebar">
 
         <div class="admin-sidebar__header">
-            <a href="/" class="admin-sidebar__logo">Batik<span>AI</span></a>
+            <a href="/" class="admin-sidebar__logo">Batix</a>
             <span class="admin-sidebar__badge">Admin</span>
         </div>
 
@@ -31,14 +31,6 @@
                             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
                         </span>
                         Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="/admin/laporan" class="admin-nav-link {{ request()->is('admin/laporan*') ? 'active' : '' }}">
-                        <span class="admin-nav-link__icon">
-                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                        </span>
-                        Laporan
                     </a>
                 </li>
             </ul>
@@ -65,15 +57,6 @@
                         Transaksi
                     </a>
                 </li>
-               
-                <li>
-                    <a href="/admin/sertifikat" class="admin-nav-link {{ request()->is('admin/sertifikat*') ? 'active' : '' }}">
-                        <span class="admin-nav-link__icon">
-                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-                        </span>
-                        Sertifikat
-                    </a>
-                </li>
             </ul>
 
         </nav>
@@ -82,8 +65,8 @@
             <div class="admin-sidebar__user">
                 <img src="https://picsum.photos/seed/adminuser/40/40" alt="Admin" class="admin-sidebar__user-avatar">
                 <div>
-                    <p class="admin-sidebar__user-name">Super Admin</p>
-                    <p class="admin-sidebar__user-role">admin@batikai.id</p>
+                    <p class="admin-sidebar__user-name">Admin</p>
+                    <p class="admin-sidebar__user-role">adminbatix@gmail.com</p>
                 </div>
             </div>
             <a href="/" class="admin-sidebar__logout" title="Keluar">
@@ -103,7 +86,7 @@
                     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
                 <div class="admin-topbar__breadcrumb">
-                    <span>BatikAI</span>
+                    <span>Batix</span>
                     <span class="sep">/</span>
                     <span class="current">@yield('breadcrumb', 'Dashboard')</span>
                 </div>

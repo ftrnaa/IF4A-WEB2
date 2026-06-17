@@ -11,7 +11,7 @@
 
     {{-- Header --}}
     <p class="auth-form__eyebrow">Sudah punya akun</p>
-    <h1 class="auth-form__title">Masuk ke <em>BatikAI</em></h1>
+    <h1 class="auth-form__title">Masuk ke <em>Batix</em></h1>
     <p class="auth-form__subtitle">
         Belum punya akun?
         <a href="/daftar">Daftar sekarang</a>
@@ -78,7 +78,7 @@
 
         {{-- Submit --}}
         <button type="submit" class="btn-auth">
-            Masuk Sekarang
+            Masuk 
         </button>
 
     </form>

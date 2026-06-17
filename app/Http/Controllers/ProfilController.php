@@ -47,20 +47,17 @@ class ProfilController extends Controller
         ]);
 
         // ── Upload avatar baru ────────────────────────────────────────────
-        if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
+        if ($request->hasFile('avatar')) {
 
-            // Hapus avatar lama dari disk agar tidak menumpuk
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
+    if ($user->avatar &&
+        Storage::disk('public')->exists($user->avatar))
+    {
+        Storage::disk('public')->delete($user->avatar);
+    }
 
-            // Simpan di storage/app/public/avatars/
-            $validated['avatar'] = $request->file('avatar')
-                                           ->store('avatars', 'public');
-        } else {
-            // Tidak ada file baru → jangan timpa kolom avatar dengan null
-            unset($validated['avatar']);
-        }
+    $validated['avatar'] = $request->file('avatar')
+                                  ->store('avatars', 'public');
+}
 
         // Sync kolom `name` = first_name + last_name
         $validated['name'] = trim(

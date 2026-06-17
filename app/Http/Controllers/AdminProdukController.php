@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Helpers\BatikHelper;
 
 class AdminProdukController extends Controller
@@ -20,26 +21,44 @@ class AdminProdukController extends Controller
         });
 
         // =========================
-        // PRODUCTS (PAKAI HELPER)
+        // FORMAT PRODUK
         // =========================
-        $products = collect($raw)
-            ->map(fn($item) => BatikHelper::format($item))
-            ->toArray();
+        $collection = collect($raw)
+            ->map(function ($item) {
+                return BatikHelper::format($item);
+            });
 
         // =========================
-        // CATEGORIES (WAJIB ADA DI ADMIN)
+        // PAGINATION
         // =========================
-        $categories = collect($products)
+        $perPage = 12;
+        $page = request()->get('page', 1);
+
+        $products = new LengthAwarePaginator(
+            $collection->forPage($page, $perPage)->values(),
+            $collection->count(),
+            $perPage,
+            $page,
+            [
+                'path' => request()->url(),
+                'query' => request()->query(),
+            ]
+        );
+
+        // =========================
+        // CATEGORIES
+        // =========================
+        $categories = $collection
             ->pluck('kategori')
             ->unique()
             ->values()
-            ->map(function ($cat, $i) use ($products) {
+            ->map(function ($cat, $i) use ($collection) {
 
                 return [
                     'id'    => $i + 1,
                     'name'  => $cat,
                     'desc'  => "Koleksi motif {$cat} hasil AI Batik.",
-                    'count' => collect($products)->where('kategori', $cat)->count(),
+                    'count' => $collection->where('kategori', $cat)->count(),
                 ];
             })
             ->toArray();

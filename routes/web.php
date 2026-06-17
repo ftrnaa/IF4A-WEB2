@@ -16,6 +16,7 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ProductLinkController;
 use App\Http\Controllers\LicenseController;
 use App\Http\controllers\AdminDashboardController;
+use App\Http\Controllers\adminTransactionController;
 use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
@@ -66,9 +67,9 @@ Route::post('/reset-password-with-otp', [ForgotPasswordController::class, 'reset
 // dashboard admin
 Route::middleware(['auth', 'admin'])->group(function () {
 
-    // DASHBOARD (REAL DATA)
-    Route::get('/admin', [AdminDashboardController::class, 'index'])
-        ->name('admin.dashboard');
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+})->name('admin.dashboard');
 
     // PRODUK
     Route::get('/admin/produk', [AdminProdukController::class, 'index'])
@@ -78,9 +79,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
         [AdminProdukController::class, 'updateDeskripsi']
     );
 
-    // TRANSAKSI (boleh nanti dibuat controller juga)
-    Route::view('/admin/transaksi', 'pages.admin.transaksi')
-        ->name('admin.transaksi');
+    // TRANSAKSI
+        Route::get('/admin/transaksi', [AdminTransactionController::class, 'index'])
+            ->name('admin.transaksi');
+ 
+        Route::get('/admin/transaksi/{order}', [AdminTransactionController::class, 'show'])
+            ->name('admin.transaksi.show');
+ 
+
     Route::delete('/admin/produk/{id}', [AdminProdukController::class, 'destroy'])->name('admin.produk.destroy');
 
     
@@ -105,6 +111,14 @@ Route::middleware(['auth'])->group(function () {
     ->name('license.certificate.pdf');
     Route::delete('/product-links/{productLink}', [ProductLinkController::class, 'destroy'])
     ->name('product-links.destroy');
+Route::get(
+    '/license/certificate/{order}',
+    [LicenseController::class, 'downloadCertificatePdf']
+)->name('license.certificate.pdf');
+    Route::get(
+    '/admin/transaksi/{order}/sertifikat',
+    [LicenseController::class, 'viewCertificatePdf']
+)->name('admin.transaksi.sertifikat');
 
 });
 Route::get('/verify/{token}', [LicenseController::class, 'verifyCertificate'])
@@ -116,19 +130,20 @@ Route::get('/phpinfo', function () {
 
 // profil user 
 Route::get('/dashboard/profil', [ProfilController::class, 'index'])
-    ->name('user.profil');
+    ->name('pages.users.profil');
 
 Route::post('/dashboard/profil/update-info', [ProfilController::class, 'updateInfo'])
-    ->name('user.profile.update-info');
+    ->name('pages.users.profil.update-info');
 
 Route::post('/dashboard/profil/update-password', [ProfilController::class, 'updatePassword'])
-    ->name('user.profile.update-password');
+    ->name('pages.users.profil.update-password');
 
 Route::post('/dashboard/profil/update-notifications', [ProfilController::class, 'updateNotifications'])
-    ->name('user.profile.update-notif');
+    ->name('pages.users.profil.update-notif');
 
 Route::delete('/dashboard/profil/delete-account', [ProfilController::class, 'deleteAccount'])
-    ->name('user.profile.delete-account');
+    ->name('pages.users.profil.delete-account');
+
 // ================== KOLEKSI BATIK ==================
 Route::get('/koleksi', [KoleksiController::class, 'index'])->name('koleksi');
 

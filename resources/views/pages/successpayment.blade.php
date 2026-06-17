@@ -168,7 +168,7 @@
 
         <p class="success-subtitle">
             Terima kasih, pembayaran Anda berhasil diproses.
-            Detail pesanan sudah dikirim ke email Anda.
+            Detail pesanan dapat dilihat pada dashboard akun Anda.
         </p>
 
         {{-- ORDER CARD --}}
@@ -204,8 +204,8 @@
 
         {{-- BUTTON --}}
         <div class="cta-buttons">
-            <a href="{{ route('koleksi') }}" class="btn-primary">
-                Kembali ke Koleksi
+            <a href="{{ route('dashboard') }}" class="btn-primary">
+                Lihat Dashboard
             </a>
         </div>
 
