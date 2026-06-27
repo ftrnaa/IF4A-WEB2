@@ -5,129 +5,252 @@
 
 <style>
 @page {
-    margin: 20px;
+    margin: 0;
     size: A4 portrait;
 }
 
-body{
+* {
+    box-sizing: border-box;
+}
+
+body {
     font-family: DejaVu Sans, sans-serif;
-    color:#222;
-    font-size:12px;
+    color: #2b2b2b;
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
 }
 
-.wrapper{
-    border:3px solid #c8a96e;
-    padding:20px;
-    min-height:1000px;
-    position:relative;
+.page {
+    padding: 24px;
 }
 
-.header{
-    text-align:center;
-    margin-bottom:20px;
+.wrapper {
+    border: 2px solid #b8935a;
+    padding: 0;
+    position: relative;
 }
 
-.header h1{
-    margin:0;
-    font-size:28px;
-    letter-spacing:2px;
+.wrapper-inner {
+    border: 1px solid #ddc9a3;
+    padding: 28px 32px;
+    min-height: 1000px;
+    position: relative;
 }
 
-.header h2{
-    margin:5px 0;
-    font-size:16px;
-    font-weight:normal;
+/* ===== Header ===== */
+.header {
+    text-align: center;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #b8935a;
 }
 
-.cert-number{
-    text-align:right;
-    font-size:11px;
-    margin-bottom:20px;
+.header .ornament {
+    font-size: 11px;
+    color: #b8935a;
+    letter-spacing: 6px;
+    margin-bottom: 6px;
 }
 
-.owner-box{
-    margin-top:20px;
-    margin-bottom:25px;
+.header h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: 3px;
+    color: #1a1a1a;
+    font-weight: bold;
 }
 
-.owner-box p{
-    margin:3px 0;
+.header h2 {
+    margin: 6px 0 0 0;
+    font-size: 13px;
+    font-weight: normal;
+    color: #555;
 }
 
-.owner-name{
-    font-size:22px;
-    font-weight:bold;
+.cert-number {
+    text-align: center;
+    font-size: 11px;
+    margin-bottom: 20px;
+    color: #555;
 }
 
-.section-title{
-    background:#f5f5f5;
-    padding:6px;
-    font-weight:bold;
-    border:1px solid #ddd;
-    margin-top:15px;
+.cert-number strong {
+    color: #1a1a1a;
+    letter-spacing: 1px;
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
+/* ===== Owner block ===== */
+.owner-box {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px dashed #c8b48a;
 }
 
-table td{
-    border:1px solid #ccc;
-    padding:8px;
+.owner-box .label-small {
+    font-size: 11px;
+    color: #777;
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.label{
-    width:35%;
-    background:#fafafa;
-    font-weight:bold;
+.owner-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1a1a1a;
+    margin: 2px 0;
 }
 
-.footer-area{
-    position:absolute;
-    bottom:30px;
-    left:20px;
-    right:20px;
+.owner-box .company {
+    font-size: 13px;
+    color: #444;
+    margin: 4px 0 0 0;
 }
 
-.bottom-row{
-    width:100%;
+.owner-box .address {
+    font-size: 11px;
+    color: #777;
+    margin: 4px 0 0 0;
 }
 
-.qr-box{
-    width:150px;
-    text-align:center;
-    float:left;
+/* ===== Section title ===== */
+.section-title {
+    background: #f7f1e6;
+    color: #6b4f2a;
+    padding: 7px 10px;
+    font-weight: bold;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-left: 4px solid #b8935a;
+    margin: 18px 0 0 0;
 }
 
-.qr-box img{
-    width:100px;
+/* ===== Info table ===== */
+table.info {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
 }
 
-.signature-box{
-    width:250px;
-    float:right;
-    text-align:center;
+table.info td {
+    border: 1px solid #e6e6e6;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    vertical-align: top;
 }
 
-.signature-space{
-    height:80px;
+table.info tr:nth-child(even) td {
+    background: #fafafa;
 }
 
-.signature-line{
-    border-top:1px solid #000;
-    padding-top:5px;
+table.info .label {
+    width: 34%;
+    background: #f5f0e6;
+    font-weight: bold;
+    color: #4a3a20;
 }
 
-.clearfix{
-    clear:both;
+.status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 10.5px;
+    letter-spacing: 0.5px;
 }
 
-.note{
-    margin-top:15px;
-    font-size:10px;
-    color:#666;
-    text-align:center;
+.status-active {
+    background: #e3f3e6;
+    color: #1f7a35;
+    border: 1px solid #9fd6ab;
+}
+
+.status-expired {
+    background: #fbe6e6;
+    color: #b32424;
+    border: 1px solid #f0b0b0;
+}
+
+/* ===== Footer ===== */
+.footer-area {
+    position: absolute;
+    bottom: 0;
+    left: 32px;
+    right: 32px;
+}
+
+table.footer-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.footer-table td {
+    border: none;
+    padding: 0;
+    vertical-align: bottom;
+}
+
+.qr-box {
+    width: 45%;
+    text-align: center;
+}
+
+.qr-box img {
+    width: 110px;
+    height: 110px;
+    border: 1px solid #ddd;
+    padding: 4px;
+    background: #fff;
+}
+
+.qr-box .qr-caption {
+    margin-top: 6px;
+    font-weight: bold;
+    font-size: 10.5px;
+    color: #333;
+}
+
+.qr-box .qr-url {
+    margin-top: 4px;
+    font-size: 8.5px;
+    word-break: break-all;
+    color: #888;
+    line-height: 1.3;
+}
+
+.signature-box {
+    width: 55%;
+    text-align: center;
+}
+
+.signature-space {
+    height: 60px;
+}
+
+.signature-line {
+    border-top: 1px solid #999;
+    padding-top: 6px;
+    font-size: 11px;
+    color: #333;
+}
+
+.signature-line strong {
+    display: block;
+    font-size: 12px;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+}
+
+.note {
+    margin-top: 22px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+    font-size: 9.5px;
+    color: #999;
+    text-align: center;
 }
 </style>
 
@@ -135,37 +258,39 @@ table td{
 
 <body>
 
+<div class="page">
 <div class="wrapper">
-
-    <div class="cert-number">
-        Certificate No :
-        <strong>{{ $certificate->certificate_number }}</strong>
-    </div>
+<div class="wrapper-inner">
 
     <div class="header">
+        <div class="ornament">&#10070; &#10070; &#10070;</div>
         <h1>SERTIFIKAT LISENSI BATIK</h1>
         <h2>Sertifikat Kepemilikan Hak Penggunaan Motif Batik</h2>
     </div>
 
+    <div class="cert-number">
+        Certificate No&nbsp;: <strong>{{ $certificate->certificate_number }}</strong>
+    </div>
+
     <div class="owner-box">
-        <p>Diberikan kepada:</p>
+        <p class="label-small">Diberikan kepada</p>
 
         <div class="owner-name">
             {{ strtoupper($order->nama) }}
         </div>
 
         @if($order->perusahaan)
-            <p>{{ $order->perusahaan }}</p>
+            <p class="company">{{ $order->perusahaan }}</p>
         @endif
 
-        <p>{{ $order->alamat }}</p>
+        <p class="address">{{ $order->alamat }}</p>
     </div>
 
     <div class="section-title">
-        INFORMASI LISENSI
+        Informasi Lisensi
     </div>
 
-    <table>
+    <table class="info">
         <tr>
             <td class="label">Nama Pemegang Lisensi</td>
             <td>{{ $order->nama }}</td>
@@ -213,16 +338,16 @@ table td{
 
         <tr>
             <td class="label">Tanggal Berakhir</td>
-            <td>{{ $expiredAt->format('d F Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($order->license_expired_at)->format('d F Y') }}</td>
         </tr>
 
         <tr>
             <td class="label">Status Lisensi</td>
             <td>
-                @if(now()->gt($expiredAt))
-                    EXPIRED
+                @if(now()->gt(\Carbon\Carbon::parse($order->license_expired_at)))
+                    <span class="status-badge status-expired">EXPIRED</span>
                 @else
-                    ACTIVE
+                    <span class="status-badge status-active">ACTIVE</span>
                 @endif
             </td>
         </tr>
@@ -230,29 +355,23 @@ table td{
 
     <div class="footer-area">
 
-        <div class="bottom-row">
-
-            <div class="qr-box">
-                <img src="{{ $qrSrc }}">
-                <div>
-                    Scan untuk verifikasi
-                </div>
-            </div>
-
-            <div class="signature-box">
-
-                <div class="signature-space"></div>
-
-                <div class="signature-line">
-                    BatikAI Indonesia<br>
-                    Penerbit Lisensi
-                </div>
-
-            </div>
-
-            <div class="clearfix"></div>
-
-        </div>
+        <table class="footer-table">
+            <tr>
+                <td class="qr-box">
+                    <img src="{{ $qrSrc }}" alt="QR Code">
+                    <div class="qr-caption">Scan untuk verifikasi</div>
+                    <div class="qr-url">{{ $verifyUrl }}</div>
+                </td>
+                <td class="signature-box">
+                    <div class="signature-space"></div>
+                    <div class="signature-line">
+                        <strong>BatikAI Indonesia</strong>
+                        Penerbit Lisensi
+                    </div>
+                </td>
+            </tr>
+            
+        </table>
 
         <div class="note">
             Sertifikat ini diterbitkan secara digital dan dapat diverifikasi melalui QR Code resmi.
@@ -260,6 +379,8 @@ table td{
 
     </div>
 
+</div>
+</div>
 </div>
 
 </body>

@@ -1,13 +1,20 @@
 /* ============================================================
    produk.js — Admin Motif & Produk
-   ============================================================ */
+============================================================ */
 
-// ── State ──────────────────────────────────────────────────
-let categories    = window.BATIK_CATEGORIES || [];
-let deleteType    = '';
-let deleteTarget  = '';
-let activeCategory = '';
+let categories = window.BATIK_CATEGORIES || [];
 
+let deleteId = null;
+let deleteTarget = "";
+let activeCategory = "";
+// ======================================================
+// CSRF TOKEN
+// ======================================================
+
+function csrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute("content") : "";
+}
 // ══════════════════════════════════════════════════════════
 // CARD ENTRANCE ANIMATION
 // ══════════════════════════════════════════════════════════
@@ -325,15 +332,26 @@ function saveCategory() {
 // ══════════════════════════════════════════════════════════
 // DELETE
 // ══════════════════════════════════════════════════════════
-function confirmDelete(type, name) {
-    deleteType   = type;
-    deleteTarget = name;
-    const nameEl = document.getElementById('delete-target-name');
-    if (nameEl) nameEl.textContent = name;
-    openModal('delete-modal');
+function confirmDelete(id,nama){
+
+    deleteId=id;
+    deleteTarget=nama;
+
+    const target=document.getElementById("delete-target-name");
+
+    if(target){
+        target.innerHTML=nama;
+    }
+
+    openModal("delete-modal");
+
 }
 
-function closeDeleteModal() { closeModal('delete-modal'); }
+function closeDeleteModal(){
+
+    closeModal("delete-modal");
+
+}
 
 function doDelete() {
     if (deleteType === 'kategori') {
@@ -359,16 +377,31 @@ function doDelete() {
 // ══════════════════════════════════════════════════════════
 // MODAL HELPERS
 // ══════════════════════════════════════════════════════════
-function openModal(id) {
-    document.getElementById(id)?.classList.add('open');
-    document.body.style.overflow = 'hidden';
+function openModal(id){
+
+    const modal=document.getElementById(id);
+
+    if(modal){
+        modal.classList.add("open");
+        modal.classList.add("show");
+    }
+
+    document.body.style.overflow="hidden";
+
 }
 
-function closeModal(id) {
-    document.getElementById(id)?.classList.remove('open');
-    document.body.style.overflow = '';
-}
+function closeModal(id){
 
+    const modal=document.getElementById(id);
+
+    if(modal){
+        modal.classList.remove("open");
+        modal.classList.remove("show");
+    }
+
+    document.body.style.overflow="";
+
+}
 // ══════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════
@@ -399,3 +432,137 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowRight') imageModalNav(1);
     });
 });
+
+
+function openProductModal(){
+
+    document.getElementById("modal-title").innerHTML="Tambah Produk";
+
+    document.getElementById("product-id").value="";
+    document.getElementById("product-name").value="";
+    document.getElementById("product-category").value="";
+    document.getElementById("product-color").value="";
+    document.getElementById("product-desc").value="";
+    document.getElementById("product-image").value="";
+
+    openModal("product-modal");
+
+}
+function editProduct(id,nama,kategori,warna,desc,img){
+
+    document.getElementById("modal-title").innerHTML="Edit Produk";
+
+    document.getElementById("product-id").value=id;
+    document.getElementById("product-name").value=nama;
+    document.getElementById("product-category").value=kategori;
+    document.getElementById("product-color").value=warna;
+    document.getElementById("product-desc").value=desc;
+    document.getElementById("product-image").value=img;
+
+    openModal("product-modal");
+
+}
+function closeProductModal(){
+
+    closeModal("product-modal");
+
+}
+function saveProduct(){
+
+    let id=document.getElementById("product-id").value;
+
+    let data={
+
+        nama:document.getElementById("product-name").value,
+        kategori:document.getElementById("product-category").value,
+        warna:document.getElementById("product-color").value,
+        deskripsi:document.getElementById("product-desc").value,
+        preview_image:document.getElementById("product-image").value
+
+    };
+
+    let url="/admin/produk";
+    let method="POST";
+
+    if(id!=""){
+        url="/admin/produk/"+id;
+        method="PUT";
+    }
+
+    fetch(url,{
+        method:method,
+        headers:{
+            "Content-Type":"application/json",
+            "Accept":"application/json",
+            "X-CSRF-TOKEN":csrfToken()
+        },
+        body:JSON.stringify(data)
+    })
+    .then(res=>res.json())
+    .then(res=>{
+
+        if(res.success){
+
+            location.reload();
+
+        }else{
+
+            alert(res.message || "Gagal menyimpan data.");
+
+        }
+
+    })
+    .catch(err=>{
+
+        console.error(err);
+        alert("Terjadi kesalahan.");
+
+    });
+
+}
+function doDelete(){
+
+    if(deleteId==null){
+        return;
+    }
+
+    fetch("/admin/produk/"+deleteId,{
+
+        method:"DELETE",
+
+        headers:{
+
+            "Accept":"application/json",
+            "X-CSRF-TOKEN":csrfToken()
+
+        }
+
+    })
+
+    .then(res=>res.json())
+
+    .then(res=>{
+
+        if(res.success){
+
+            closeDeleteModal();
+
+            location.reload();
+
+        }else{
+
+            alert("Gagal menghapus produk");
+
+        }
+
+    })
+
+    .catch(err=>{
+
+        console.log(err);
+
+        alert("Terjadi kesalahan.");
+
+    });
+
+}

@@ -39,7 +39,7 @@
                     onclick="clearSearch()">✕</button>
         </div>
 
-        {{-- CATEGORY DROPDOWN (styled same as koleksi) --}}
+        {{-- CATEGORY DROPDOWN --}}
         <div class="produk-filter-dropdown-wrap">
             <div class="produk-filter-dropdown" id="produkFilterDropdown">
 
@@ -120,6 +120,7 @@
             $desc     = $p['deskripsi'] ?? '';
             $price    = $p->price       ?? 150000;
             $code     = $p->code        ?? '';
+            $id       = $p['id'];
         @endphp
 
         <div class="motif-card product-item"
@@ -159,9 +160,9 @@
                     <p class="card-code">#{{ $code }}</p>
                 @endif
 
-                <h3 class="card-title">{{ $name }}</h3>
+                <p class="card-title">{{ $name }}</p>
 
-                <p class="card-desc" id="desc-display-{{ $loop->index }}">{{ $desc }}</p>
+                <p class="card-desc">{{ $desc }}</p>
 
                 <div class="card-divider"></div>
 
@@ -169,28 +170,29 @@
                     <p class="card-price">Rp {{ number_format($price, 0, ',', '.') }}</p>
 
                     <div class="card-actions">
-                        <button class="card-action-btn card-action-edit"
-                            title="Edit Deskripsi"
-                            onclick='openProductModal(
-                                @json($name),
-                                @json($kategori),
-                                @json($price),
-                                @json($desc),
-                                {{ $loop->index }}
-                            )'>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                        </button>
                         <button class="card-action-btn card-action-delete"
                             title="Hapus"
-                            onclick='confirmDelete("motif", @json($name))'>
+                            onclick='confirmDelete({{ $id }}, @json($name))'>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                                 <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
                             </svg>
                         </button>
+                        <button
+class="card-action-btn"
+
+onclick='editProduct(
+{{ $id }},
+@json($name),
+@json($kategori),
+@json($p["warna"] ?? ""),
+@json($desc),
+@json($p["preview"] ?? "")
+)'>
+
+✏️
+
+</button>
                     </div>
                 </div>
 
@@ -206,7 +208,7 @@
 
     </div>
 
-    {{-- PAGINATION — di luar grid, setelah grid --}}
+    {{-- PAGINATION --}}
     @if($products->hasPages())
     <div class="produk-pagination">
         {{ $products->links() }}
@@ -281,51 +283,6 @@
     </div>
 </div>
 
-{{-- ===================== MODAL EDIT DESKRIPSI ===================== --}}
-<div class="admin-modal-overlay" id="product-modal">
-    <div class="admin-modal" style="max-width:520px">
-
-        <div class="admin-modal__header">
-            <p class="admin-modal__title" id="product-modal-title">Edit Motif</p>
-            <button class="admin-modal__close" onclick="closeProductModal()">✕</button>
-        </div>
-
-        <div class="admin-modal__body">
-
-            <div class="admin-form-group">
-                <label>Nama Motif</label>
-                <input type="text" id="pf-name" class="admin-form-input" disabled>
-            </div>
-
-            <div class="admin-form-group">
-                <label>Kategori</label>
-                <input type="text" id="pf-cat" class="admin-form-input" disabled>
-            </div>
-
-            <div class="admin-form-group">
-                <label>Harga</label>
-                <input type="text" id="pf-price" class="admin-form-input" disabled>
-            </div>
-
-            <div class="admin-form-group">
-                <label>Deskripsi <span class="label-editable-badge">✏️ Dapat diedit</span></label>
-                <textarea id="pf-desc" class="admin-form-textarea" rows="5"></textarea>
-            </div>
-
-            <input type="hidden" id="pf-card-index">
-
-        </div>
-
-        <div class="admin-modal__footer">
-            <button class="admin-action-btn admin-action-btn--outline"
-                    onclick="closeProductModal()">Batal</button>
-            <button class="admin-action-btn admin-action-btn--primary"
-                    onclick="saveProduct()">Simpan</button>
-        </div>
-
-    </div>
-</div>
-
 {{-- ===================== MODAL KATEGORI ===================== --}}
 <div class="admin-modal-overlay" id="cat-modal">
     <div class="admin-modal">
@@ -381,7 +338,95 @@
 
     </div>
 </div>
+<div class="admin-modal-overlay" id="product-modal">
 
+<div class="admin-modal">
+
+<div class="admin-modal__header">
+<p class="admin-modal__title" id="modal-title">
+Tambah Produk
+</p>
+
+<button class="admin-modal__close"
+onclick="closeProductModal()">
+✕
+</button>
+
+</div>
+
+<div class="admin-modal__body">
+
+<input type="hidden" id="product-id">
+
+<div class="admin-form-group">
+<label>Nama</label>
+
+<input
+type="text"
+id="product-name"
+class="admin-form-input">
+</div>
+
+<div class="admin-form-group">
+<label>Kategori</label>
+
+<input
+type="text"
+id="product-category"
+class="admin-form-input">
+</div>
+
+<div class="admin-form-group">
+<label>Warna</label>
+
+<input
+type="text"
+id="product-color"
+class="admin-form-input">
+</div>
+
+<div class="admin-form-group">
+<label>Deskripsi</label>
+
+<textarea
+id="product-desc"
+class="admin-form-textarea"></textarea>
+</div>
+
+<div class="admin-form-group">
+<label>Preview Image</label>
+
+<input
+type="text"
+id="product-image"
+class="admin-form-input">
+</div>
+
+</div>
+
+<div class="admin-modal__footer">
+
+<button
+class="admin-action-btn admin-action-btn--outline"
+onclick="closeProductModal()">
+
+Batal
+
+</button>
+
+<button
+class="admin-action-btn admin-action-btn--primary"
+onclick="saveProduct()">
+
+Simpan
+
+</button>
+
+</div>
+
+</div>
+
+</div>
 @endsection
 
 @push('scripts')

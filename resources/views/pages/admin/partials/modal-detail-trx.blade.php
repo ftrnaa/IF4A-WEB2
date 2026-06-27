@@ -85,3 +85,74 @@
     </div>
   </div>
 </div>
+<script>
+function openDetailModal(url)
+{
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+
+            document.getElementById('modal-trx-id').textContent =
+                data.kode_order ?? '-';
+
+            document.getElementById('modal-detail-buyer-name').textContent =
+                data.nama ?? '-';
+
+            document.getElementById('modal-detail-buyer-email').textContent =
+                data.email ?? '-';
+
+            document.getElementById('modal-detail-product').textContent =
+                data.batik?.nama ?? '-';
+
+            document.getElementById('modal-detail-cat').textContent =
+                data.batik?.kategori ?? '-';
+
+            document.getElementById('modal-detail-amount').textContent =
+                'Rp ' + Number(data.total).toLocaleString('id-ID');
+
+            document.getElementById('modal-buyer-avatar').src =
+                'https://ui-avatars.com/api/?name=' +
+                encodeURIComponent(data.nama);
+
+            document.getElementById('modal-motif-img').src =
+                data.batik?.preview_url ?? '';
+              document.getElementById('modal-detail-method').textContent =
+    (data.payment_type ?? '-') + ' / ' + (data.payment_channel ?? '-');
+
+document.getElementById('modal-detail-date').textContent =
+    data.created_at ?? '-';
+
+document.getElementById('modal-detail-expiry').textContent =
+    data.license_expired_at ?? '-';
+
+document.getElementById('modal-detail-ref').textContent =
+    data.reference_no ?? '-';
+
+            document.getElementById('detail-trx-modal')
+        .classList.add('open');
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Gagal memuat detail transaksi');
+        });
+}
+
+function closeDetailModal()
+{
+     document.getElementById('detail-trx-modal')
+        .classList.remove('open');
+}
+const badges = document.getElementById('modal-detail-badges');
+
+badges.innerHTML = `
+    <span class="status-badge ${
+        data.status === 'paid'
+            ? 'status-badge--paid'
+            : data.status === 'pending'
+            ? 'status-badge--pending'
+            : 'status-badge--failed'
+    }">
+        ${data.status}
+    </span>
+`;
+</script>

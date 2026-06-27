@@ -21,8 +21,12 @@
             <a href="/" class="user-sidebar__logo">Batik</a>
             <div class="user-sidebar__profile">
                 <div class="user-sidebar__avatar-wrap">
-                    <img src="https://picsum.photos/seed/userme/80/80"
-                         alt="Profil" class="user-sidebar__avatar">
+                <img
+    src="{{ auth()->user()->avatar
+        ? asset('storage/' . auth()->user()->avatar)
+        : asset('images/default-avatar.png') }}"
+    alt="Profil"
+    class="user-sidebar__avatar">
                     <span class="user-sidebar__avatar-status"></span>
                 </div>
                 <div>

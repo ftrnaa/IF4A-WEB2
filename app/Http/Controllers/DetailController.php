@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Batik;
 use App\Helpers\BatikHelper;
+use App\Models\ProductLink;
 
 class DetailController extends Controller
 {
@@ -19,12 +20,16 @@ class DetailController extends Controller
         // =========================
         if (!$motif) {
 
-            return view('pages.detail', [
-                'motif' => null,
-                'relatedMotifs' => [],
-                'error' => 'Data tidak ditemukan'
-            ]);
-        }
+    return view('pages.detail', [
+        'motif' => null,
+        'relatedMotifs' => [],
+        'error' => 'Data tidak ditemukan'
+    ]);
+}
+
+$productLinks = ProductLink::where('batik_id', $motif->id)
+    ->latest()
+    ->get();
 
         // =========================
         // RELATED MOTIFS
@@ -45,8 +50,9 @@ class DetailController extends Controller
             });
 
         return view('pages.detail', compact(
-            'motif',
-            'relatedMotifs'
-        ));
+    'motif',
+    'relatedMotifs',
+    'productLinks'
+));
     }
 }

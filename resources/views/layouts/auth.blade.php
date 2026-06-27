@@ -24,7 +24,7 @@
             <div class="auth-panel__pattern"></div>
 
             <div class="auth-panel__top">
-                <a href="/" class="auth-panel__logo">Batik<span>AI</span></a>
+                <a href="/" class="auth-panel__logo">Batix<span></span></a>
             </div>
 
             <div class="auth-panel__content">
@@ -41,12 +41,8 @@
                 </p>
                 <div class="auth-panel__stats">
                     <div>
-                        <p class="auth-panel__stat-num">10.000+</p>
+                        <p class="auth-panel__stat-num">{{ number_format($totalMotif) }}+</p>
                         <p class="auth-panel__stat-lbl">Motif tersedia</p>
-                    </div>
-                    <div>
-                        <p class="auth-panel__stat-num">500+</p>
-                        <p class="auth-panel__stat-lbl">Referensi otentik</p>
                     </div>
                     <div>
                         <p class="auth-panel__stat-num">100%</p>

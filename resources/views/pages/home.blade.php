@@ -61,19 +61,16 @@
                 </div>
 
                 <div class="hero__stats fade-up fade-up-d3">
-                    <div>
-                        <p class="hero__stat-num">10.000+</p>
-                        <p class="hero__stat-lbl">Motif tersedia</p>
-                    </div>
-                    <div>
-                        <p class="hero__stat-num">500+</p>
-                        <p class="hero__stat-lbl">Referensi otentik</p>
-                    </div>
-                    <div>
-                        <p class="hero__stat-num">100%</p>
-                        <p class="hero__stat-lbl">Bebas komersial</p>
-                    </div>
-                </div>
+    <div>
+        <p class="hero__stat-num">{{ number_format($totalMotif) }}+</p>
+        <p class="hero__stat-lbl">Motif tersedia</p>
+    </div>
+
+    <div>
+        <p class="hero__stat-num">100%</p>
+        <p class="hero__stat-lbl">Bebas komersial</p>
+    </div>
+</div>
             </div>
 
             {{-- Visual --}}

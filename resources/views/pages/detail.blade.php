@@ -162,7 +162,7 @@ if (empty($slides)) {
 
             {{-- PRICE --}}
             <p class="motif-harga">
-                Rp 150.000R
+                Rp 150.000
             </p>
 
             <p class="motif-harga-note">
@@ -227,15 +227,39 @@ if (empty($slides)) {
             </div>
 
             {{-- LICENSE --}}
-            <div class="section-box">
+            
+            {{-- PRODUCT LINKS --}}
+<div class="section-box">
 
-                <h3>Lisensi</h3>
+    <h3>Produk yang Menggunakan Motif Ini</h3>
 
-                <p>
-                    Lisensi personal, tidak boleh dijual ulang atau dibagikan.
-                </p>
+    @if($productLinks->count())
 
-            </div>
+        <div class="product-links">
+
+            @foreach($productLinks->unique('url') as $link)
+
+                <a
+                    href="{{ $link->url }}"
+                    target="_blank"
+                    class="product-link-item"
+                >
+                    🔗 {{ $link->title ?: parse_url($link->url, PHP_URL_HOST) }}
+                </a>
+
+            @endforeach
+
+        </div>
+
+    @else
+
+        <p>
+            Belum ada produk yang menggunakan motif ini.
+        </p>
+
+    @endif
+
+</div>
 
         </div>
 

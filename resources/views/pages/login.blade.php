@@ -6,7 +6,7 @@
     'panelQuote' => '"Setiap helai kain menyimpan cerita yang menunggu untuk ditemukan kembali."',
 ])
     
->
+
 @section('content')
 
     {{-- Header --}}

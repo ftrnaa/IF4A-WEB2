@@ -47,7 +47,6 @@ class PaymentController extends Controller
 
 public function notification(Request $request)
 {
-    
     Config::$serverKey = config('midtrans.server_key');
     Config::$isProduction = false;
 
@@ -59,22 +58,70 @@ public function notification(Request $request)
     $order = Order::where('kode_order', $orderId)->first();
 
     if (!$order) {
-        return response()->json(['message' => 'Order not found'], 404);
+        return response()->json([
+            'message' => 'Order not found'
+        ], 404);
     }
 
     if ($status == 'settlement') {
-        $order->status = 'paid';
-    } elseif ($status == 'pending') {
+
+    $order->status = 'paid';
+
+    if (
+        $order->license_expired_at &&
+        $order->license_expired_at > now()
+    ) {
+
+        $order->license_expired_at =
+            \Carbon\Carbon::parse(
+                $order->license_expired_at
+            )->addYear();
+
+    } else {
+
+        $order->license_expired_at =
+            now()->addYear();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jika ini order renewal,
+    | tandai order lama sebagai sudah diperpanjang
+    |--------------------------------------------------------------------------
+    */
+    if ($order->is_renewal && $order->renew_from_id) {
+
+        $oldOrder = Order::find($order->renew_from_id);
+
+        if ($oldOrder) {
+
+            $oldOrder->update([
+                'renewed_at' => now(),
+            ]);
+
+        }
+    }
+
+}
+
+     elseif ($status == 'pending') {
+
         $order->status = 'pending';
+
     } elseif ($status == 'expire') {
-        $order->status = 'expired';
+
+        $order->status = 'cancelled';
+
     } elseif ($status == 'cancel') {
+
         $order->status = 'cancelled';
     }
 
     $order->save();
 
-    return response()->json(['message' => 'OK']);
+    return response()->json([
+        'message' => 'OK'
+    ]);
 }
 public function success(Order $order)
 {
@@ -87,37 +134,81 @@ public function success(Order $order)
 
     try {
 
-        $transaction = Transaction::status($order->kode_order);
+        $transaction = Transaction::status(
+            $order->kode_order
+        );
 
+       
         if (
-            $transaction->transaction_status == 'settlement' ||
-            $transaction->transaction_status == 'capture'
-        ) {
+    $transaction->transaction_status == 'settlement' ||
+    $transaction->transaction_status == 'capture'
+) {
 
-            $order->status = 'paid';
+    $order->status = 'paid';
 
-            // Simpan jenis pembayaran
-            $order->payment_type = $transaction->payment_type ?? null;
+    if (
+        $order->license_expired_at &&
+        $order->license_expired_at > now()
+    ) {
 
-            // Simpan channel pembayaran
-            if (
-                isset($transaction->va_numbers) &&
-                !empty($transaction->va_numbers)
-            ) {
-                $order->payment_channel =
-                    $transaction->va_numbers[0]->bank;
-            } else {
-                $order->payment_channel =
-                    $transaction->payment_type ?? null;
-            }
+        $order->license_expired_at =
+            \Carbon\Carbon::parse(
+                $order->license_expired_at
+            )->addYear();
 
-            $order->save();
+    } else {
+
+        $order->license_expired_at =
+            now()->addYear();
+
+    }
+
+    // Kalau ini order renewal
+    if ($order->is_renewal && $order->renew_from_id) {
+
+        $oldOrder = Order::find($order->renew_from_id);
+
+        if ($oldOrder) {
+
+            $oldOrder->update([
+                'renewed_at' => now(),
+            ]);
+
         }
 
+    }
+
+    // payment type
+    $order->payment_type =
+        $transaction->payment_type ?? null;
+
+    // payment channel
+    if (
+        isset($transaction->va_numbers) &&
+        !empty($transaction->va_numbers)
+    ) {
+
+        $order->payment_channel =
+            $transaction->va_numbers[0]->bank;
+
+    } else {
+
+        $order->payment_channel =
+            $transaction->payment_type ?? null;
+
+    }
+
+    $order->save();
+}
+
     } catch (\Exception $e) {
+
         \Log::error($e->getMessage());
     }
 
-    return view('pages.successpayment', compact('order'));
+    return view(
+        'pages.successpayment',
+        compact('order')
+    );
 }
 }

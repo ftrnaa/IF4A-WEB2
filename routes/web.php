@@ -16,7 +16,9 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ProductLinkController;
 use App\Http\Controllers\LicenseController;
 use App\Http\controllers\AdminDashboardController;
-use App\Http\Controllers\adminTransactionController;
+use App\Http\Controllers\AdminTransactionController;
+use App\Http\Controllers\SyncController;
+use App\Models\Batik;
 use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
@@ -29,9 +31,17 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // About
 Route::view('/tentang', 'pages.about')->name('about');
 
-Route::view('/masuk', 'pages.login')->name('login');
+Route::get('/masuk', function () {
+    $totalMotif = Batik::count();
 
-Route::view('/daftar', 'pages.register')->name('register');
+    return view('pages.login', compact('totalMotif'));
+})->name('login');
+
+Route::get('/daftar', function () {
+    $totalMotif = Batik::count();
+
+    return view('pages.register', compact('totalMotif'));
+})->name('register');
 
 Route::post('/login', [AuthController::class, 'login'])
     ->name('login.process');
@@ -67,17 +77,41 @@ Route::post('/reset-password-with-otp', [ForgotPasswordController::class, 'reset
 // dashboard admin
 Route::middleware(['auth', 'admin'])->group(function () {
 
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->name('admin.dashboard');
+ // DASHBOARD (REAL DATA)
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
+    ->name('admin.dashboard');
+        Route::get('/dashboard/chart-data', [AdminDashboardController::class, 'chartData'])
+        ->name('admin.dashboard.chart-data');
+ 
+    // BARU: export laporan (pdf / excel)
+    Route::get('/dashboard/export/{type}', [AdminDashboardController::class, 'export'])
+        ->name('admin.dashboard.export')
+        ->where('type', 'pdf|excel');
+ 
+    // BARU: detail satu order untuk modal
+    Route::get('/dashboard/order/{order}', [AdminDashboardController::class, 'show'])
+        ->name('admin.dashboard.order.show');
 
     // PRODUK
-    Route::get('/admin/produk', [AdminProdukController::class, 'index'])
-        ->name('admin.produk');
+Route::get('/admin/produk', [AdminProdukController::class, 'index'])
+    ->name('admin.produk');
 
-    Route::put('/admin/produk/{id}/deskripsi', 
-        [AdminProdukController::class, 'updateDeskripsi']
-    );
+// Tambah produk
+Route::post('/admin/produk', [AdminProdukController::class, 'store'])
+    ->name('admin.produk.store');
+
+// Update produk
+Route::put('/admin/produk/{id}', [AdminProdukController::class, 'update'])
+    ->name('admin.produk.update');
+
+// Jika masih dipakai untuk edit deskripsi saja
+Route::put('/admin/produk/{id}/deskripsi',
+    [AdminProdukController::class, 'updateDeskripsi']
+);
+
+// Hapus produk
+Route::delete('/admin/produk/{id}', [AdminProdukController::class, 'destroy'])
+    ->name('admin.produk.destroy');
 
     // TRANSAKSI
         Route::get('/admin/transaksi', [AdminTransactionController::class, 'index'])
@@ -89,8 +123,14 @@ Route::get('/admin/dashboard', function () {
 
     Route::delete('/admin/produk/{id}', [AdminProdukController::class, 'destroy'])->name('admin.produk.destroy');
 
+    Route::get('/admin/sync', [SyncController::class, 'index'])
+    ->name('admin.sync');
+
+Route::post('/admin/sync/run', [SyncController::class, 'sync'])
+    ->name('admin.sync.run');
     
 });
+
 // dashboard user
 Route::middleware(['auth'])->group(function () {
 
@@ -103,6 +143,10 @@ Route::middleware(['auth'])->group(function () {
 )->name('dashboard.licenses');
     Route::post('/product-links', [ProductLinkController::class, 'store'])
         ->name('product-links.store');
+    Route::get(
+    '/dashboard/license/{order}/renew',
+    [LicenseController::class, 'renewPayment']
+)->name('license.renew');
     Route::get(
     '/dashboard/license/{order}/motif-pdf',
     [LicenseController::class, 'downloadMotifPdf']

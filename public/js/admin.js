@@ -195,74 +195,7 @@ function downloadBlob(content, filename, mime) {
   showToast('✓ File CSV berhasil diunduh');
 }
 
-function openDetailModal(tx) {
-  document.getElementById('modal-trx-id').textContent        = tx.id + ' · ' + tx.date;
-  document.getElementById('modal-buyer-avatar').src          = `https://picsum.photos/seed/${tx.img}/80/80`;
-  document.getElementById('modal-detail-buyer-name').textContent  = tx.name;
-  document.getElementById('modal-detail-buyer-email').textContent = tx.email;
-  document.getElementById('modal-motif-img').src             = `https://picsum.photos/seed/${tx.motif}/120/120`;
-  document.getElementById('modal-detail-product').textContent = tx.product;
-  document.getElementById('modal-detail-cat').textContent     = tx.cat + ' · Lisensi Komersial';
-  document.getElementById('modal-detail-amount').textContent  = 'Rp ' + tx.amount;
-  document.getElementById('modal-detail-date').textContent    = tx.date;
-  document.getElementById('modal-detail-expiry').textContent  = tx.status === 'paid' ? tx.expiry : '—';
-  document.getElementById('modal-detail-method').textContent  = 'Transfer Bank';
-  document.getElementById('modal-detail-ref').textContent     = tx.status === 'paid' ? 'BNI-' + Math.floor(Math.random()*900000000+100000000) : '—';
 
-  // Badges
-  const badgeMap = {
-    paid:    '<span class="status-badge status-badge--paid">Lunas</span>',
-    pending: '<span class="status-badge status-badge--pending">Menunggu</span>',
-    failed:  '<span class="status-badge status-badge--failed">Gagal</span>',
-  };
-  let badges = badgeMap[tx.status] || '';
-  if (tx.status === 'paid') {
-    badges += ' <span class="status-badge status-badge--paid">Lisensi Aktif</span>';
-    badges += tx.cert
-      ? ' <span class="status-badge status-badge--sent">Sertifikat Terkirim</span>'
-      : ' <span style="font-size:.75rem;color:var(--clr-text-muted)">Sertifikat Belum Dikirim</span>';
-  }
-  document.getElementById('modal-detail-badges').innerHTML = badges;
-
-  // Timeline
-  const timelines = {
-    paid: [
-      ['Transaksi dibuat', tx.date + ', 09:14'],
-      ['Pembayaran dikonfirmasi', tx.date + ', 10:02'],
-      ['Lisensi diaktifkan', tx.date + ', 10:02'],
-      tx.cert ? ['Sertifikat dikirim ke ' + tx.email, tx.date + ', 10:15'] : null,
-    ].filter(Boolean),
-    pending: [
-      ['Transaksi dibuat', tx.date + ', 09:14'],
-      ['Menunggu konfirmasi pembayaran', '—'],
-    ],
-    failed: [
-      ['Transaksi dibuat', tx.date + ', 09:14'],
-      ['Pembayaran gagal / kadaluarsa', tx.date + ', 10:00'],
-    ],
-  };
-  const items = timelines[tx.status] || [];
-  document.getElementById('modal-detail-timeline').innerHTML = items.map((item, i) => `
-    <div style="display:flex;gap:.75rem;align-items:flex-start">
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div style="width:10px;height:10px;border-radius:50%;background:${tx.status==='paid'?'#27AE60':'#C8A96E'};flex-shrink:0;margin-top:3px"></div>
-        ${i < items.length-1 ? '<div style="width:1.5px;background:rgba(200,169,110,.25);flex:1;min-height:14px;margin-top:2px"></div>' : ''}
-      </div>
-      <div>
-        <p style="font-size:.83rem;color:var(--clr-brown-dark)">${item[0]}</p>
-        <p style="font-size:.7rem;color:var(--clr-text-muted);margin-top:1px">${item[1]}</p>
-      </div>
-    </div>
-  `).join('');
-
-  // Footer buttons
-  document.getElementById('modal-btn-cancel').style.display  = tx.status === 'pending' ? '' : 'none';
-  document.getElementById('modal-btn-cert').style.display    = tx.status === 'paid'    ? '' : 'none';
-  document.getElementById('modal-btn-confirm').style.display = tx.status === 'pending' ? '' : 'none';
-
-  document.getElementById('detail-trx-modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
 
 function closeDetailModal() {
   document.getElementById('detail-trx-modal').classList.remove('open');
@@ -337,4 +270,43 @@ function openRiwayatModal(c) {
 function closeRiwayatModal() {
   document.getElementById('riwayat-cert-modal').classList.remove('open');
   document.body.style.overflow = '';
+}
+function openDetailModal(id) {
+   console.log('🔥 FUNCTION DIPANGGIL ID:', id);
+    fetch(`/admin/orders/${id}`)
+        .then(res => res.json())
+        .then(tx => {
+
+            console.log(tx); // WAJIB cek dulu
+console.log(document.getElementById('d-payment'));
+console.log(document.getElementById('d-expired'));
+            // USER
+            document.getElementById('d-user-name').innerText = tx.user?.name ?? '-';
+            document.getElementById('d-user-email').innerText = tx.user?.email ?? '-';
+
+            // PRODUCT
+            document.getElementById('d-product-name').innerText = tx.product?.name ?? '-';
+            document.getElementById('d-product-price').innerText = tx.product?.price ?? '-';
+
+            document.getElementById('d-product-image').src =
+                tx.product?.image ?? 'https://placehold.co/100x100';
+
+            // PAYMENT
+            document.getElementById('d-payment').innerText =
+                `${tx.payment?.type ?? '-'} / ${tx.payment?.channel ?? '-'}`;
+
+            // TOTAL
+            document.getElementById('d-total').innerText = tx.total_formatted ?? '-';
+
+            // DATE
+            document.getElementById('d-created').innerText = tx.created_at ?? '-';
+            document.getElementById('d-expired').innerText = tx.expired_at ?? 'Belum tersedia';
+
+            // SHOW MODAL (kalau ada)
+            document.getElementById('detail-modal-overlay')?.classList.add('open');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Gagal load data order');
+        });
 }

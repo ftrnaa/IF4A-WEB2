@@ -303,49 +303,7 @@ $user = $user ?? auth()->user();
             </div>
         </div>
 
-        {{-- ── Kartu Notifikasi ───────────────────────────────────────── --}}
-        <div class="user-card">
-            <div class="user-card__header">
-                <p class="user-card__title">NOTIFIKASI</p>
-            </div>
-            <div class="user-card__body">
-                <form method="POST" action="{{ route('pages.users.profil.update-notif') }}">
-                    @csrf
-                    <div style="display:flex;flex-direction:column;gap:.85rem">
-                        @php
-                        $notifItems = [
-                            ['key' => 'notif_license', 'label' => 'Lisensi hampir habis (30 hari)'],
-                            ['key' => 'notif_cert',    'label' => 'Sertifikat baru diterima'],
-                            ['key' => 'notif_promo',   'label' => 'Promo dan motif baru'],
-                            ['key' => 'notif_news',    'label' => 'Newsletter BatikAI'],
-                        ];
-                        @endphp
-                        @foreach($notifItems as $n)
-                            <label style="display:flex;align-items:center;
-                                          justify-content:space-between;
-                                          cursor:pointer;font-size:.85rem;
-                                          color:var(--clr-text-muted)">
-                                <span>{{ $n['label'] }}</span>
-                                <input type="checkbox"
-                                       name="{{ $n['key'] }}"
-                                       value="1"
-                                       {{ $user->{$n['key']} ? 'checked' : '' }}
-                                       style="width:18px;height:18px;
-                                              accent-color:var(--clr-green);
-                                              cursor:pointer">
-                            </label>
-                        @endforeach
-                    </div>
-                    <div style="display:flex;justify-content:flex-end;margin-top:1.1rem">
-                        <button type="submit" class="btn-save"
-                                style="padding:.55rem 1.3rem;font-size:.82rem">
-                            Simpan
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
+        
         {{-- ── Kartu Danger Zone ──────────────────────────────────────── --}}
         <div class="user-card">
             <div class="user-card__header">

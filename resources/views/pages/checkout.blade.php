@@ -180,22 +180,35 @@ body {
 
                         <div class="form-group">
                             <label>Nama *</label>
-                            <input type="text" name="nama">
+                            <input
+    type="text"
+    name="nama"
+    value="{{ auth()->user()->full_name }}"
+    readonly>
                         </div>
 
                         <div class="form-group">
                             <label>Email *</label>
-                            <input type="email" name="email">
+                            <input
+    type="email"
+    name="email"
+    value="{{ old('email', auth()->user()->email ?? '') }}"
+    readonly>
                         </div>
 
                         <div class="form-group">
-                            <label>No HP</label>
-                            <input type="text" name="telepon">
-                        </div>
+    <label>No HP</label>
+    <input
+        type="text"
+        name="telepon"
+        value="{{ old('telepon', auth()->user()->phone) }}"
+        required
+        minlength="10">
+</div>
 
                         <div class="form-group">
                             <label>No KTP (NIK)</label>
-                            <input type="text" name="nik">
+                            <input type="text" name="nik" value="{{ old('nik') }}" required minlength="16" maxlength="16">
                         </div>
 
                     </div>

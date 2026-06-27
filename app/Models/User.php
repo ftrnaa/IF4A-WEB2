@@ -53,4 +53,8 @@ public function paidOrders()
     return $this->hasMany(Order::class, 'user_id')
                 ->where('status', 'paid');
 }
+public function getFullNameAttribute()
+{
+    return $this->first_name . ' ' . $this->last_name;
+}
 }

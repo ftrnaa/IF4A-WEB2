@@ -115,15 +115,17 @@
                             <td style="white-space:nowrap">
                                 <div>
                                     <p style="font-size:.82rem;font-weight:600;color:{{ $licenseStatus === 'expired' ? '#C0392B' : ($licenseStatus === 'expiring' ? '#B8610A' : 'var(--clr-brown-dark)') }}">
-                                        {{ $expiryDate->format('d M Y') }}
+                                        {{ $expiryDate?->format('d M Y') ?? '-' }}
                                     </p>
-                                    @if($licenseStatus === 'active')
-                                        <p style="font-size:.7rem;color:var(--clr-text-muted)">{{ $daysLeft }} hari lagi</p>
-                                    @elseif($licenseStatus === 'expiring')
-                                        <p style="font-size:.7rem;color:#B8610A;font-weight:600">⚠ {{ $daysLeft }} hari lagi</p>
-                                    @elseif($licenseStatus === 'expired')
-                                        <p style="font-size:.7rem;color:#C0392B;font-weight:600">Berakhir {{ abs($daysLeft) }} hari lalu</p>
-                                    @endif
+                                    @if($daysLeft !== null)
+    @if($licenseStatus === 'active')
+        <p>{{ $daysLeft }} hari lagi</p>
+    @elseif($licenseStatus === 'expiring')
+        <p style="color:#B8610A">⚠ {{ $daysLeft }} hari lagi</p>
+    @elseif($licenseStatus === 'expired')
+        <p style="color:#C0392B">Berakhir {{ abs($daysLeft) }} hari lalu</p>
+    @endif
+@endif
                                 </div>
                             </td>
 

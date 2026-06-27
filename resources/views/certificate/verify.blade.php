@@ -117,9 +117,13 @@
 <body>
 
 @php
-    $expiredAt = \Carbon\Carbon::parse($certificate->issued_at)->addYear();
+    $issuedAt = $certificate->order->created_at;
 
-    $isExpired = now()->greaterThan($expiredAt);
+    $expiredAt = $certificate->order->license_expired_at;
+
+    $isExpired = $expiredAt
+        ? now()->greaterThan($expiredAt)
+        : false;
 @endphp
 
 <div class="card">
@@ -169,14 +173,14 @@
             <tr>
                 <td class="label">Tanggal Terbit</td>
                 <td class="value">
-                    {{ \Carbon\Carbon::parse($certificate->issued_at)->format('d F Y') }}
+                    {{ $issuedAt->format('d F Y') }}
                 </td>
             </tr>
 
             <tr>
                 <td class="label">Berlaku Sampai</td>
                 <td class="value">
-                    {{ $expiredAt->format('d F Y') }}
+                    {{ $expiredAt ? $expiredAt->format('d F Y') : '-' }}
                 </td>
             </tr>
 

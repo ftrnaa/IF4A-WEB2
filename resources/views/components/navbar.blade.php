@@ -2,7 +2,7 @@
     <div class="container navbar__inner">
 
         {{-- Logo --}}
-        <a href="/" class="navbar__logo">Batik<span>AI</span></a>
+        <a href="/" class="navbar__logo">Bati<span>x</span></a>
 
         {{-- Desktop Nav --}}
         <ul class="navbar__nav" role="list">

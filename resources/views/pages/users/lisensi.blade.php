@@ -4,6 +4,11 @@
 
 @section('content')
 
+@if(session('success'))
+<div class="alert alert-success mb-3">
+    {{ session('success') }}
+</div>
+@endif
 <div class="admin-page-header">
     <h1>Produk Saya</h1>
     <p>Kelola semua lisensi motif batik yang sudah kamu beli.</p>
@@ -47,44 +52,81 @@
     @foreach($orders as $idx => $order)
 
     @php
-        $buyDate     = \Carbon\Carbon::parse($order->created_at);
-        $expiryDate  = $buyDate->copy()->addYear();
-        $today       = now();
-        $daysLeft    = (int) round($today->diffInDays($expiryDate, false));
-        $total       = 365;
-        $elapsed     = $total - max(0, $daysLeft);
-        $pct         = max(0, min(100, ($elapsed / $total) * 100));
-        $remainingPct = max(0, floor(($daysLeft / 365) * 100));
+     $buyDate = \Carbon\Carbon::parse($order->created_at);
+    $expiryDate = \Carbon\Carbon::parse($order->license_expired_at);
+    $today = now();
 
-        if ($daysLeft < 0) {
-            $status      = 'expired';
-            $statusLabel = 'Kedaluwarsa';
-            $pillClass   = 'lic-pill--expired';
-            $badgeClass  = 'lic-img-badge--expired';
-            $progressClass = 'lic-progress__fill--expired';
-        } elseif ($daysLeft <= 30) {
-            $status      = 'expiring';
-            $statusLabel = 'Hampir Habis';
-            $pillClass   = 'lic-pill--warn';
-            $badgeClass  = 'lic-img-badge--warn';
-            $progressClass = 'lic-progress__fill--warn';
-        } else {
-            $status      = 'active';
-            $statusLabel = 'Aktif';
-            $pillClass   = 'lic-pill--active';
-            $badgeClass  = 'lic-img-badge--active';
-            $progressClass = '';
-        }
+    $daysLeft = (int) $today->diffInDays($expiryDate, false);
 
-        $images = [];
-        if ($order->batik->preview_image) {
-            $images[] = $order->batik->preview_image;
-        }
-        $costumeImages = $order->batik->costume_images ?? [];
-        if (is_array($costumeImages)) {
-            $images = array_merge($images, $costumeImages);
-        }
-    @endphp
+    // tombol perpanjang muncul jika sisa <= 2 hari
+// apakah order lama sudah pernah diperpanjang
+$isHistory = !is_null($order->renewed_at);
+
+// apakah motif sudah dimiliki user lain
+$isOwnedByOther = \App\Models\Order::where('batik_id', $order->batik_id)
+    ->where('status', 'paid')
+    ->where('user_id', '!=', $order->user_id)
+    ->exists();
+
+// tombol renew hanya muncul jika:
+// - sisa <= 2 hari
+// - belum pernah diperpanjang
+// - belum dibeli user lain
+$canRenew =
+    $daysLeft <= 2 &&
+    !$isHistory &&
+    !$isOwnedByOther;
+
+    $total = 365;
+    $elapsed = $total - max(0, $daysLeft);
+    $pct = max(0, min(100, ($elapsed / $total) * 100));
+    $remainingPct = max(0, floor(($daysLeft / 365) * 100));
+
+    if ($isHistory) {
+
+    $status = 'history';
+    $statusLabel = 'Riwayat';
+    $pillClass = 'lic-pill--active';
+    $badgeClass = 'lic-img-badge--active';
+    $progressClass = '';
+
+} elseif ($daysLeft < 0) {
+
+    $status = 'expired';
+    $statusLabel = 'Kedaluwarsa';
+    $pillClass = 'lic-pill--expired';
+    $badgeClass = 'lic-img-badge--expired';
+    $progressClass = 'lic-progress__fill--expired';
+
+} elseif ($daysLeft <= 30) {
+
+    $status = 'expiring';
+    $statusLabel = 'Hampir Habis';
+    $pillClass = 'lic-pill--warn';
+    $badgeClass = 'lic-img-badge--warn';
+    $progressClass = 'lic-progress__fill--warn';
+
+} else {
+
+    $status = 'active';
+    $statusLabel = 'Aktif';
+    $pillClass = 'lic-pill--active';
+    $badgeClass = 'lic-img-badge--active';
+    $progressClass = '';
+
+}
+    $images = [];
+
+    if ($order->batik->preview_image) {
+        $images[] = $order->batik->preview_image;
+    }
+
+    $costumeImages = $order->batik->costume_images ?? [];
+
+    if (is_array($costumeImages)) {
+        $images = array_merge($images, $costumeImages);
+    }
+@endphp
 
     <div class="lic-card {{ $status === 'expired' ? 'lic-card--expired' : '' }}" id="license-card-{{ $idx }}">
         <div class="lic-card__inner">
@@ -106,7 +148,15 @@
                 {{-- Judul --}}
                 <div>
                     <p class="lic-category">{{ $order->batik->kategory }}</p>
-                    <p class="lic-name">{{ $order->batik->nama }}</p>
+                    <p class="lic-name">
+    {{ $order->batik->nama }}
+
+    @if($isHistory)
+        <span class="badge bg-secondary ms-2">
+            Riwayat
+        </span>
+    @endif
+</p>
                 </div>
 
                 {{-- Meta --}}
@@ -137,11 +187,19 @@
                         <div class="lic-progress__fill {{ $progressClass }}" style="width:{{ $pct }}%"></div>
                     </div>
                     <span class="lic-progress-text">
-                        @if($status === 'expired')
-                            Berakhir {{ abs($daysLeft) }} hari lalu
-                        @else
-                            {{ $daysLeft }} hari lagi ({{ $remainingPct }}% tersisa)
-                        @endif
+                        @if($status === 'history')
+
+    Riwayat Lisensi
+
+@elseif($status === 'expired')
+
+    Berakhir {{ abs($daysLeft) }} hari lalu
+
+@else
+
+    {{ $daysLeft }} hari lagi ({{ $remainingPct }}% tersisa)
+
+@endif
                     </span>
                 </div>
 
@@ -168,14 +226,26 @@
                         @endforeach
                     </div>
                     @endif
-
+                    @php
+    $linkCount = $order->productLinks->count();
+@endphp
                     {{-- Tombol tambah --}}
-                    <button
-                        type="button"
-                        class="cert-btn cert-btn--add"
-                        onclick="showAddLink({{ $idx }})">
-                        ➕ Tambah Link
-                    </button>
+                @if($linkCount < 5)
+    <button
+        type="button"
+        class="cert-btn cert-btn--add"
+        onclick="showAddLink({{ $idx }})">
+        ➕ Tambah Link
+    </button>
+@else
+    <button
+        type="button"
+        class="cert-btn cert-btn--add"
+        disabled
+        style="opacity:.5;cursor:not-allowed">
+        🚫 Maksimal 5 Link
+    </button>
+@endif
 
                     {{-- Form input link (tersembunyi) --}}
                     <div class="lic-link-input-wrap" id="link-input-wrap-{{ $idx }}" style="display:none">
@@ -207,11 +277,15 @@
                     <a href="{{ route('license.certificate.pdf', $order->id) }}" class="cert-btn cert-btn--cert cert-btn--block">
                         📜 Sertifikat PDF
                     </a>
-                    @if($status === 'expired')
-                    <a href="/koleksi" class="cert-btn cert-btn--renew cert-btn--block">
-                        🔄 Perpanjang
-                    </a>
-                    @endif
+                   @if(
+    $canRenew &&
+    !$order->renewed_at
+)
+<a href="{{ route('license.renew', $order->id) }}"
+   class="cert-btn cert-btn--renew cert-btn--block">
+    🔄 Perpanjang Lisensi
+</a>
+@endif
                 </div>
 
             </div>
@@ -544,7 +618,7 @@ function showAddLink(idx) {
 /* ── Save product link ────────────────────────────────── */
 async function saveProductLink(idx, orderId, batikName) {
     const input = document.getElementById(`link-input-${idx}`);
-    const url   = input?.value?.trim();
+    const url = input?.value?.trim();
 
     if (!url) {
         alert('Masukkan URL terlebih dahulu.');
@@ -559,18 +633,30 @@ async function saveProductLink(idx, orderId, batikName) {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ order_id: orderId, url, title: batikName }),
+            body: JSON.stringify({
+                order_id: orderId,
+                url,
+                title: batikName
+            }),
         });
 
         const data = await response.json();
 
+        // 🔥 FIX UTAMA DI SINI
+        if (!response.ok) {
+            alert(data.message || 'Gagal menyimpan link.');
+            return;
+        }
+
         if (data.success) {
             location.reload();
         } else {
-            alert(data.message ?? 'Gagal menyimpan link.');
+            alert(data.message || 'Gagal menyimpan link.');
         }
+
     } catch (err) {
-        alert('Terjadi kesalahan. Coba lagi.');
+        console.error(err);
+        alert('Server error / response tidak valid JSON.');
     }
 }
 

@@ -34,8 +34,8 @@ class AdminTransactionController extends Controller
 
         $orders = $query->latest()->paginate(9)->withQueryString();
 
-        $totalTransaksi = Order::paid()->count();
-        $totalPemasukan = Order::paid()->sum('total');
+          $totalTransaksi = Order::activeLicense()->count();
+        $totalPemasukan = Order::activeLicense()->sum('total');
         $lisensiHampirHabis = Order::licenseStatus('expiring')->count();
 
         return view('pages.admin.transaksi', compact(
@@ -44,14 +44,51 @@ class AdminTransactionController extends Controller
             'totalPemasukan',
             'lisensiHampirHabis'
         ));
+        $orders->each(function ($order) {
+    $order->expiryDate = $order->license_expired_at
+        ? \Carbon\Carbon::parse($order->license_expired_at)
+        : null;
+
+    $order->daysLeft = $order->license_expired_at
+        ? now()->diffInDays($order->license_expired_at, false)
+        : null;
+
+    $order->licenseStatus = $order->license_status;
+});
     }
 
     public function show(Order $order)
-    {
-        $order->load(['user', 'batik']);
+{
+    $order->load(['batik']);
 
-        return view('pages.admin.transaksi-detail', compact('order'));
-    }
+    return response()->json([
+        'id' => $order->id,
+        'kode_order' => $order->kode_order,
+        'nama' => $order->nama,
+        'email' => $order->email,
+        'total' => $order->total,
+        'status' => $order->status,
+
+        // PAYMENT (pakai kolom yang ADA di DB)
+        'payment_type' => $order->payment_type,
+        'payment_channel' => $order->payment_channel,
+
+        // DATE
+        'created_at' => $order->created_at?->format('d M Y'),
+        'license_expired_at' => $order->license_expired_at
+            ? \Carbon\Carbon::parse($order->license_expired_at)->format('d M Y')
+            : '-',
+
+        // REF (pakai kode_order karena tidak ada reference_no)
+        'reference_no' => $order->kode_order,
+
+        'batik' => [
+            'nama' => $order->batik->nama ?? '-',
+            'kategori' => $order->batik->kategori ?? '-',
+            'preview_url' => $order->batik->preview_url ?? '',
+        ]
+    ]);
+}
 
     /**
      * ADMIN HANYA VIEW SERTIFIKAT
@@ -61,10 +98,10 @@ class AdminTransactionController extends Controller
     public function viewCertificate(Order $order)
     {
         abort_unless(
-            $order->status === 'paid',
-            404,
-            'Order belum lunas.'
-        );
+    $order->status === 'paid' && $order->license_expired_at,
+    404,
+    'Order belum lunas atau lisensi tidak aktif.'
+);
 
         $order->load(['user', 'batik']);
 

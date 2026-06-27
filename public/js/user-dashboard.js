@@ -107,47 +107,68 @@ document.addEventListener('keydown', (e) => {
    ============================================================ */
 
 // ── Product Link: Save ────────────────────────────────────
-function saveProductLink(idx, motifName) {
-    const input = document.getElementById('link-input-' + idx);
+async function saveProductLink(idx, orderId, batikName) {
+
+    const input = document.getElementById(`link-input-${idx}`);
     if (!input) return;
 
     const url = input.value.trim();
+
     if (!url) {
         userToast('⚠ Masukkan link produk terlebih dahulu');
         return;
     }
 
-    // Basic URL validation
     try {
         new URL(url);
     } catch {
-        userToast('⚠ Link tidak valid. Pastikan diawali https://');
+        userToast('⚠ Link tidak valid');
         return;
     }
 
-    // Show loading state on preview card
-    const inputWrap  = document.getElementById('link-input-wrap-' + idx);
-    const previewWrap = document.getElementById('link-preview-' + idx);
-    const previewCard = document.getElementById('preview-card-' + idx);
+    try {
 
-    // Update data-url attribute
-    previewCard.dataset.url = url;
+        const response = await fetch('/product-links', {
 
-    // Switch visibility
-    inputWrap.style.display  = 'none';
-    previewWrap.style.display = '';
+            method: 'POST',
 
-    // Reset to loading state
-    document.getElementById('ppc-loading-' + idx).style.display = 'flex';
-    const content = document.getElementById('ppc-content-' + idx);
-    if (content) content.style.display = 'none';
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN':
+                    document.querySelector('meta[name="csrf-token"]').content
+            },
 
-    // Load preview
-    loadProductPreview(idx, url);
+            body: JSON.stringify({
 
-    userToast('✓ Link produk "' + motifName + '" berhasil disimpan');
+                order_id: orderId,
+                title: batikName,
+                url: url
+
+            })
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            userToast(data.message ?? 'Gagal menyimpan link');
+            return;
+        }
+
+        userToast('✓ Link berhasil disimpan');
+
+        location.reload();
+
+    } catch (e) {
+
+        console.error(e);
+
+        userToast('Server Error');
+
+    }
+
 }
-
 // ── Product Link: Edit (switch back to input) ─────────────
 function editProductLink(idx) {
     const inputWrap   = document.getElementById('link-input-wrap-' + idx);

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin — Batix')</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +27,8 @@
             <p class="admin-sidebar__nav-label">Utama</p>
             <ul role="list">
                 <li>
-                    <a href="/admin" class="admin-nav-link {{ request()->is('admin') ? 'active' : '' }}">
+                    <a href="{{ route('admin.dashboard') }}"
+   class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <span class="admin-nav-link__icon">
                             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
                         </span>
@@ -55,6 +57,17 @@
                             <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                         </span>
                         Transaksi
+                    </a>
+                </li>
+            </ul>
+            <p class="admin-sidebar__nav-label">Sync Produk</p>
+            <ul role="list">
+                <li>
+                    <a href="/admin/sync" class="admin-nav-link {{ request()->is('admin/sync*') ? 'active' : '' }}">
+                        <span class="admin-nav-link__icon">
+                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        </span>
+                        Sync Produk
                     </a>
                 </li>
             </ul>
@@ -109,7 +122,7 @@
 
     </div>
 
-    <script src="{{ asset('js/admin.js') }}" defer></script>
+    {{-- <script src="{{ asset('js/admin.js') }}" defer></script> --}}
     @stack('scripts')
 </body>
 </html>

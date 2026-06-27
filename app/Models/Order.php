@@ -36,6 +36,9 @@ class Order extends Model
 
         'license_expired_at',
         'is_renewal',
+        'renew_from_id',
+        'renewed_at'
+
     ];
 
     protected $casts = [
@@ -82,37 +85,20 @@ class Order extends Model
      * Dihitung dari created_at + 1 tahun, sama seperti LicenseController::index.
      */
     public function scopeLicenseStatus($query, string $status)
-    {
-        $today = Carbon::today();
+{
+    return match ($status) {
+        'active' => $query->where('status', 'paid')
+            ->where('license_expired_at', '>', now()->addDays(30)),
 
-        return match ($status) {
-            'active' => $query->where('status', 'paid')
-                ->whereDate(
-                    $query->getConnection()->raw("DATE_ADD(created_at, INTERVAL 1 YEAR)"),
-                    '>',
-                    $today->copy()->addDays(30)
-                ),
-            'expiring' => $query->where('status', 'paid')
-                ->whereDate(
-                    $query->getConnection()->raw("DATE_ADD(created_at, INTERVAL 1 YEAR)"),
-                    '>=',
-                    $today
-                )
-                ->whereDate(
-                    $query->getConnection()->raw("DATE_ADD(created_at, INTERVAL 1 YEAR)"),
-                    '<=',
-                    $today->copy()->addDays(30)
-                ),
-            'expired' => $query->where('status', 'paid')
-                ->whereDate(
-                    $query->getConnection()->raw("DATE_ADD(created_at, INTERVAL 1 YEAR)"),
-                    '<',
-                    $today
-                ),
-            default => $query,
-        };
-    }
+        'expiring' => $query->where('status', 'paid')
+            ->whereBetween('license_expired_at', [now(), now()->addDays(30)]),
 
+        'expired' => $query->where('status', 'paid')
+            ->where('license_expired_at', '<', now()),
+
+        default => $query,
+    };
+}
     // ── Computed Helpers (selaras dengan LicenseController & License model) ──
 
     /**
@@ -121,58 +107,57 @@ class Order extends Model
      * existing (LicenseController::index) memakai created_at + 1 tahun,
      * sehingga accessor ini ikut pola tersebut demi konsistensi tampilan.
      */
-    public function getLicenseExpiryAttribute(): Carbon
-    {
-        return Carbon::parse($this->created_at)->addYear();
-    }
+    
 
     /**
      * Sisa hari dari hari ini ke tanggal kedaluwarsa lisensi.
      * Negatif berarti sudah lewat.
      */
-    public function getDaysLeftAttribute(): int
-    {
-        return (int) Carbon::today()->diffInDays($this->license_expiry, false);
-    }
+public function getDaysLeftAttribute(): int
+{
+    return $this->license_expired_at
+        ? now()->diffInDays($this->license_expired_at, false)
+        : 0;
+}
 
     /**
      * Status lisensi: active | expiring | expired | none
      * 'none' dipakai jika order belum/tidak paid.
      */
-    public function getLicenseStatusAttribute(): string
-    {
-        if ($this->status !== 'paid') {
-            return 'none';
-        }
-
-        $daysLeft = $this->days_left;
-
-        if ($daysLeft < 0) {
-            return 'expired';
-        }
-
-        if ($daysLeft <= 30) {
-            return 'expiring';
-        }
-
-        return 'active';
-    }
-
+    
     /**
      * Label status lisensi dalam Bahasa Indonesia, untuk dipakai langsung di view/JSON.
      */
-    public function getLicenseStatusLabelAttribute(): string
-    {
-        return match ($this->license_status) {
-            'active'   => 'Aktif',
-            'expiring' => 'Hampir Habis',
-            'expired'  => 'Kedaluwarsa',
-            default    => '-',
-        };
+    public function getLicenseStatusAttribute(): string
+{
+    if ($this->status !== 'paid' || !$this->license_expired_at) {
+        return 'none';
     }
+
+    $daysLeft = now()->diffInDays($this->license_expired_at, false);
+
+    if ($daysLeft < 0) {
+        return 'expired';
+    }
+
+    if ($daysLeft <= 30) {
+        return 'expiring';
+    }
+
+    return 'active';
+}
+
+
 
     public function certificate()
 {
     return $this->hasOne(Certificate::class, 'order_id');
 }
+public function scopeActiveLicense($query)
+{
+    return $query->where('status', 'paid')
+        ->whereNotNull('license_expired_at')
+        ->where('license_expired_at', '>', now());
+}
+
 }

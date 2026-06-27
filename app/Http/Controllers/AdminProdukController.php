@@ -1,71 +1,96 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Pagination\LengthAwarePaginator;
-use App\Helpers\BatikHelper;
+use App\Models\Batik;
 
 class AdminProdukController extends Controller
 {
     public function index(): View
     {
-        $raw = Cache::remember('batik_products', 3600, function () {
+        $products = Batik::latest()->paginate(24);
 
-            $response = Http::timeout(60)
-                ->get('https://btx.agunghakase.my.id/api/batik/getall');
-
-            return $response->json()['batiks'] ?? [];
+        $products->getCollection()->transform(function ($item) {
+            return [
+                'id'             => $item->id,
+                'nama'           => $item->nama,
+                'kategori'       => $item->kategori,
+                'warna'          => $item->warna,
+                'deskripsi'      => $item->deskripsi,
+                'preview'        => $item->preview_image,
+                'costume_images' => $item->costume_images,
+                'created_at'     => $item->api_created_at,
+            ];
         });
 
-        // =========================
-        // FORMAT PRODUK
-        // =========================
-        $collection = collect($raw)
-            ->map(function ($item) {
-                return BatikHelper::format($item);
-            });
+        $allCategories = Batik::select('kategori')
+            ->distinct()
+            ->pluck('kategori');
 
-        // =========================
-        // PAGINATION
-        // =========================
-        $perPage = 12;
-        $page = request()->get('page', 1);
+        $categories = $allCategories->values()->map(function ($cat, $i) {
+            return [
+                'id'    => $i + 1,
+                'name'  => $cat,
+                'desc'  => "Koleksi motif {$cat} hasil AI Batik.",
+                'count' => Batik::where('kategori', $cat)->count(),
+            ];
+        })->toArray();
 
-        $products = new LengthAwarePaginator(
-            $collection->forPage($page, $perPage)->values(),
-            $collection->count(),
-            $perPage,
-            $page,
-            [
-                'path' => request()->url(),
-                'query' => request()->query(),
-            ]
-        );
-
-        // =========================
-        // CATEGORIES
-        // =========================
-        $categories = $collection
-            ->pluck('kategori')
-            ->unique()
-            ->values()
-            ->map(function ($cat, $i) use ($collection) {
-
-                return [
-                    'id'    => $i + 1,
-                    'name'  => $cat,
-                    'desc'  => "Koleksi motif {$cat} hasil AI Batik.",
-                    'count' => $collection->where('kategori', $cat)->count(),
-                ];
-            })
-            ->toArray();
-
-        return view('pages.admin.produk', compact(
-            'products',
-            'categories'
-        ));
+        return view('pages.admin.produk', compact('products', 'categories'));
     }
+
+    public function destroy($id)
+    {
+        $batik = Batik::findOrFail($id);
+        $batik->delete();
+
+        return response()->json(['success' => true]);
+    }
+    public function store(Request $request)
+{
+    $request->validate([
+        'nama' => 'required',
+        'kategori' => 'required',
+        'warna' => 'nullable',
+        'deskripsi' => 'nullable',
+        'preview_image' => 'nullable',
+    ]);
+
+    Batik::create([
+        'nama' => $request->nama,
+        'kategori' => $request->kategori,
+        'warna' => $request->warna,
+        'deskripsi' => $request->deskripsi,
+        'preview_image' => $request->preview_image,
+        'costume_images' => [],
+    ]);
+
+    return response()->json([
+        'success'=>true,
+        'message'=>'Produk berhasil ditambahkan'
+    ]);
+}
+public function update(Request $request,$id)
+{
+    $batik = Batik::findOrFail($id);
+
+    $request->validate([
+        'nama'=>'required',
+        'kategori'=>'required',
+    ]);
+
+    $batik->update([
+        'nama'=>$request->nama,
+        'kategori'=>$request->kategori,
+        'warna'=>$request->warna,
+        'deskripsi'=>$request->deskripsi,
+        'preview_image'=>$request->preview_image,
+    ]);
+
+    return response()->json([
+        'success'=>true,
+        'message'=>'Produk berhasil diubah'
+    ]);
+}
 }

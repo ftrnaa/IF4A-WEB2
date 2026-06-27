@@ -129,9 +129,26 @@
 
     <div class="license-item__status">
 
-        <span class="status-badge status-badge--paid">
-            Aktif
-        </span>
+       @php
+    $expiredAt = $order->license_expired_at
+        ? \Carbon\Carbon::parse($order->license_expired_at)
+        : null;
+
+    $daysLeft = $expiredAt ? now()->diffInDays($expiredAt, false) : null;
+@endphp
+
+@if(!$expiredAt)
+    <span class="status-badge status-badge--paid">Aktif</span>
+
+@elseif($daysLeft < 0)
+    <span class="status-badge status-badge--expired">Kedaluwarsa</span>
+
+@elseif($daysLeft <= 30)
+    <span class="status-badge status-badge--warning">Hampir Habis</span>
+
+@else
+    <span class="status-badge status-badge--paid">Aktif</span>
+@endif
 
     </div>
 
@@ -206,9 +223,7 @@
 
     <div class="cert-item__actions">
 
-        <button class="cert-btn cert-btn--view">
-            👁 Lihat
-        </button>
+    
 
       <a
     href="{{ route('license.certificate.pdf', $order->id) }}"
