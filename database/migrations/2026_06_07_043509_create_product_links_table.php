@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('licenses', function (Blueprint $table) {
+        Schema::create('product_links', function (Blueprint $table) {
     $table->id();
-    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-    $table->string('license_number')->nullable();
-    $table->boolean('is_active')->default(true);
-    $table->date('started_at')->nullable();
-    $table->date('expired_at')->nullable();
+
+    $table->foreignId('order_id')->constrained()->cascadeOnDelete();
+
+    $table->string('title')->nullable();
+    $table->text('url');
+
     $table->timestamps();
 });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('licenses');
+        Schema::dropIfExists('product_links');
     }
 };

@@ -61,18 +61,24 @@
         </div>
 
         {{-- Email --}}
-        <div class="form-group">
-            <label class="form-label" for="email">Alamat Email</label>
-            <input
-                class="form-input"
-                type="email"
-                id="email"
-                name="email"
-                placeholder="nama@email.com"
-                autocomplete="email"
-                required
-            >
-        </div>
+<div class="form-group">
+    <label class="form-label" for="email">Alamat Email</label>
+
+    <input
+        class="form-input @error('email') is-invalid @enderror"
+        type="email"
+        id="email"
+        name="email"
+        value="{{ old('email') }}"
+        placeholder="nama@email.com"
+        autocomplete="email"
+        required
+    >
+
+    @error('email')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
+</div>
 
         {{-- Password --}}
         <div class="form-group">

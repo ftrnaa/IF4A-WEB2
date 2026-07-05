@@ -16,19 +16,19 @@ class OrdersExport implements FromCollection, WithHeadings
     }
 
     public function collection()
-    {
-        return $this->transactions->map(function ($tx) {
-            return [
-                'ID' => $tx->id,
-                'Pembeli' => $tx->user->name ?? '-',
-                'Email' => $tx->user->email ?? '-',
-                'Produk' => $tx->batik->name ?? '-',
-                'Total' => $tx->total,
-                'Status' => $tx->status,
-                'Tanggal' => optional($tx->created_at)->format('d-m-Y H:i'),
-            ];
-        });
-    }
+{
+    return $this->transactions->map(function ($tx) {
+        return [
+            'ID'       => $tx->id,
+            'Pembeli'  => $tx->nama ?? '-',
+            'Email'    => $tx->email ?? '-',
+            'Produk'   => $tx->batik->nama ?? '-',
+            'Total'    => $tx->total,
+            'Status'   => $tx->status,
+            'Tanggal'  => optional($tx->created_at)->format('d-m-Y H:i'),
+        ];
+    });
+}
 
     public function headings(): array
     {

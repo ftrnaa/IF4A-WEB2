@@ -40,9 +40,10 @@ class KoleksiController extends Controller
         // PAGINATION
         // =========================
         $motifs = $query
-            ->latest()
-            ->paginate(12)
-            ->withQueryString();
+    ->orderByRaw('costume_images IS NULL ASC')
+    ->latest()
+    ->paginate(12)
+    ->withQueryString();
 
         // =========================
         // CATEGORIES

@@ -9,27 +9,30 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
-{
-    Schema::create('users', function (Blueprint $table) {
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
 
-        $table->id();
+            $table->id();
 
-        $table->string('first_name')->nullable();
-        $table->string('last_name')->nullable();
+            $table->string('first_name');
 
-        $table->string('email')->unique();
-        $table->timestamp('email_verified_at')->nullable();
+            $table->string('last_name');
 
-        $table->string('password');
+            $table->string('email')->unique();
 
-        $table->string('google_id')->nullable();
+            $table->string('password');
 
-        $table->rememberToken();
-        $table->timestamps();
+            $table->enum('role', ['admin', 'user'])
+                  ->default('user');
 
-    });
-}
+            $table->string('google_id')->nullable();
+
+            $table->rememberToken();
+
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.

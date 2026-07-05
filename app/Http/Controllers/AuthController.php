@@ -12,14 +12,23 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    // REGISTER USER
-    public function register(Request $request)
+   // REGISTER USER
+public function register(Request $request)
 {
     $request->validate([
         'first_name' => 'required',
         'last_name'  => 'required',
-        'email'      => 'required|email|unique:users',
+        'email'      => 'required|email|unique:users,email',
         'password'   => 'required|min:6|confirmed',
+    ], [
+        'first_name.required' => 'Nama depan wajib diisi.',
+        'last_name.required'  => 'Nama belakang wajib diisi.',
+        'email.required'      => 'Email wajib diisi.',
+        'email.email'         => 'Format email tidak valid.',
+        'email.unique'        => 'Email sudah dipakai.',
+        'password.required'   => 'Kata sandi wajib diisi.',
+        'password.min'        => 'Kata sandi minimal 6 karakter.',
+        'password.confirmed'  => 'Konfirmasi kata sandi tidak sesuai.',
     ]);
 
     $user = User::create([
@@ -30,28 +39,30 @@ class AuthController extends Controller
         'role'       => 'user',
     ]);
 
-    // auto login setelah register
+    // Auto login setelah register
     Auth::login($user);
 
     return redirect()->route('dashboard');
 }
 
-    // LOGIN
-    public function login(Request $request)
+    /// LOGIN
+public function login(Request $request)
 {
     $credentials = $request->validate([
         'email' => 'required|email',
         'password' => 'required',
+    ], [
+        'email.required' => 'Email wajib diisi.',
+        'email.email' => 'Format email tidak valid.',
+        'password.required' => 'Kata sandi wajib diisi.',
     ]);
 
-    // login menggunakan session laravel
     if (Auth::attempt($credentials)) {
 
         $request->session()->regenerate();
 
         $user = Auth::user();
 
-        // redirect berdasarkan role
         if ($user->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
@@ -60,10 +71,9 @@ class AuthController extends Controller
     }
 
     return back()->withErrors([
-        'email' => 'Email atau password salah.',
+        'email' => 'Maaf, email atau kata sandi Anda salah.',
     ])->withInput();
 }
-
 public function logout(Request $request)
 {
     Auth::logout();

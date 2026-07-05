@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('certificates', function (Blueprint $table) {
+        Schema::create('certificates', function (Blueprint $table) {
     $table->id();
-    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-    $table->string('display_name')->nullable();
-    $table->string('type')->nullable();
-    $table->string('icon')->nullable();
-    $table->dateTime('issued_at')->nullable();
-    $table->string('file_path')->nullable();
+    $table->foreignId('order_id')->constrained()->onDelete('cascade');
+
+    $table->string('certificate_number')->unique();
+    $table->string('qr_token')->unique();
+
+    $table->timestamp('issued_at')->nullable();
+
     $table->timestamps();
 });
     }

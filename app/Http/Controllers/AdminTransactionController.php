@@ -143,13 +143,14 @@ class AdminTransactionController extends Controller
         $expiredAt = $issuedAt->copy()->addYear();
 
         return Pdf::loadView('pdf.certificate', [
-            'order'       => $order,
-            'batik'       => $order->batik,
-            'certificate' => $certificate,
-            'qrSrc'       => $qrSrc,
-            'issuedAt'    => $issuedAt,
-            'expiredAt'   => $expiredAt,
-            'isAdminView' => true,
-        ])->setPaper('A4', 'portrait');
+    'order'       => $order,
+    'batik'       => $order->batik,
+    'certificate' => $certificate,
+    'qrSrc'       => $qrSrc,
+    'verifyUrl'   => $verifyUrl, // tambahkan ini
+    'issuedAt'    => $issuedAt,
+    'expiredAt'   => $expiredAt,
+    'isAdminView' => true,
+])->setPaper('A4', 'portrait');
     }
 }

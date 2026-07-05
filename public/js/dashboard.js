@@ -195,11 +195,13 @@ function openDetailModal(orderId) {
             setText('d-product-name', data.product.name);
             setText('d-product-price', data.product.price);
 
-            setText('d-payment-method', data.payment_method);
+            setText('d-payment',`${data.payment.type} / ${data.payment.channel}`
+);
+
             setText('d-total', data.total_formatted);
 
             setText('d-created', data.created_at);
-            setText('d-updated', data.updated_at);
+            setText('d-expired', data.expired_at);
 
             if (loading) loading.style.display = 'none';
             if (content) content.style.display = 'block';

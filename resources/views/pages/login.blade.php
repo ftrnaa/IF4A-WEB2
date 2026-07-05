@@ -35,40 +35,51 @@
         @csrf
 
         {{-- Email --}}
-        <div class="form-group">
-            <label class="form-label" for="email">Alamat Email</label>
-            <input
-                class="form-input"
-                type="email"
-                id="email"
-                name="email"
-                placeholder="nama@email.com"
-                autocomplete="email"
-                required
-            >
-        </div>
+<div class="form-group">
+    <label class="form-label" for="email">Alamat Email</label>
 
+    <input
+        class="form-input @error('email') is-invalid @enderror"
+        type="email"
+        id="email"
+        name="email"
+        value="{{ old('email') }}"
+        placeholder="nama@email.com"
+        autocomplete="email"
+        required
+    >
+
+    @error('email')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
+</div>
         {{-- Password --}}
-        <div class="form-group">
-            <div class="form-group--row">
-                <label class="form-label" for="password">Kata Sandi</label>
-                <a href="/forgot-password" class="forgot-link">Lupa sandi?</a>
-            </div>
-            <div class="form-input-wrap">
-                <input
-                    class="form-input"
-                    type="password"
-                    id="password"
-                    name="password"
-                    placeholder="Masukkan kata sandi"
-                    autocomplete="current-password"
-                    required
-                >
-                <button type="button" class="toggle-pass" aria-label="Tampilkan sandi" onclick="togglePassword('password', this)">
-                    👁
-                </button>
-            </div>
-        </div>
+<div class="form-group">
+    <div class="form-group--row">
+        <label class="form-label" for="password">Kata Sandi</label>
+        <a href="/forgot-password" class="forgot-link">Lupa sandi?</a>
+    </div>
+
+    <div class="form-input-wrap">
+        <input
+            class="form-input @error('email') is-invalid @enderror"
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Masukkan kata sandi"
+            autocomplete="current-password"
+            required
+        >
+
+        <button
+            type="button"
+            class="toggle-pass"
+            aria-label="Tampilkan sandi"
+            onclick="togglePassword('password', this)">
+            👁
+        </button>
+    </div>
+</div>
 
         {{-- Remember me --}}
         <div class="form-check">
